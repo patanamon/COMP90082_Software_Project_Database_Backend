@@ -2,7 +2,7 @@
 
 ## back-end deploy method
 
-###require python3.7 or higher and MySQL
+### require python3.7 or higher and MySQL
 
 1. Install all packages needed `pip install -r requirements.txt` (if python2 and python3 are both installed, use pip3 and python3)
 2. start MySQL server on localhost:3306, and create a database named "sp90013" `CREATE DATABASE sp90013`
