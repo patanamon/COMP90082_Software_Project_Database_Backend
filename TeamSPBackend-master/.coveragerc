@@ -1,0 +1,20 @@
+[run]
+ omit =
+  manage.py
+  asgi.py
+  wsgi.py
+  settings/*
+  test/run_suites_and_write_report.py
+  test/HTMLTestRunner.py
+  */apps.py
+[report]
+ omit =
+  manage.py
+  */invitation.py
+  */slack.py
+  */dto.py
+  */asgi.py
+  */wsgi.py
+  */settings/*
+  */test/*
+  */apps.py
