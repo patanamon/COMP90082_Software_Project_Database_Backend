@@ -13,7 +13,6 @@ It provides REST apis for students activities data on Confluence, Jira, and Git.
 4. create MySQL tables `python manage.py migrate`
 5. start server `python manage.py runserver`
 6. api web server is now running on: http://127.0.0.1:8000/api/v1
-7. to test if the config is set correctly, use `python TeamSPBackend/test/test_case/test_deploy.py`
 
 
 ### Structuring files
