@@ -15,13 +15,6 @@ from TeamSPBackend.api.dto.dto import LoginDTO, AddAccountDTO, UpdateAccountDTO
 
 logger = logging.getLogger('django')
 
-# create admin user if not exist
-try:
-    Account.objects.get(username='admin')
-except ObjectDoesNotExist:
-    import object_creation_helpers
-    object_creation_helpers.createGenericAdmin()
-
 @require_http_methods(['POST', 'GET'])
 @check_user_login()
 def account_router(request, *args, **kwargs):
