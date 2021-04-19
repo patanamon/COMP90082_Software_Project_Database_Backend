@@ -2,7 +2,7 @@
 
 from django.db import models
 
-
+# a comment
 class Account(models.Model):
 
     account_id = models.AutoField(db_column='id', primary_key=True)
