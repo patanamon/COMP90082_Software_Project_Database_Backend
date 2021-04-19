@@ -1,5 +1,5 @@
 from django.db import models
-from TeamSPBackend.account.models import Account
+# from TeamSPBackend.account.models import Account
 # Create your models here.
 
 
