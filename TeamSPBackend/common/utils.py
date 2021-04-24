@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import base64
+from threading import Timer
 
 from functools import wraps
 from Crypto.Cipher import AES
@@ -138,3 +139,8 @@ def decrypt_aes(key):
         return None
     aes = AES.new(auto_fill(SALT), AES.MODE_ECB)
     return str(aes.decrypt(base64.decodebytes(key))).rstrip('\0')
+
+
+def start_schedule(func, interval, *args):
+    func(*args)
+    Timer(interval, start_schedule, args=(func, interval, *args)).start()
