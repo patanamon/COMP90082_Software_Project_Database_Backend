@@ -45,8 +45,9 @@ urlpatterns = [
     # Git Related API
     path('git/commit', get_git_commits),
     path('git/pullrequest', get_git_pr),
+
     # Confluence Related API
-    path('confluence/spaces/<space_key>', confluence.get_space),
+    # path('confluence/spaces/<space_key>', confluence.get_space),
     path('confluence/spaces/<space_key>/pages', confluence.get_pages_of_space),
     path('confluence/spaces/<space_key>/pages/contributions',
          page_contributions.get_all_page_contributions),
@@ -58,6 +59,8 @@ urlpatterns = [
     path('confluence/users/<member>', confluence.get_user_details),
     path('subject/<subjectcode>/<year>/supervisors',
          confluence.get_subject_supervisors),
+    # COMP90082 21 S1 sprint1
+    path('confluence/spaces/<key_word>', confluence.get_spaces_by_key),
 
     # Jira Related API
     path('jira/<team>/jiracfd', helpJira.get_jira_CFD),
