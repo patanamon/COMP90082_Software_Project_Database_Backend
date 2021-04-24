@@ -256,7 +256,8 @@ def log_into_confluence(username, password):
     confluence = Confluence(
         url='https://confluence.cis.unimelb.edu.au:8443/',
         username=username,
-        password=password
+        password=password,
+        verify_ssl=False
     )
     return confluence
 
@@ -281,3 +282,29 @@ def get_members(request, group):
     except Exception as e:
         print(e)
         return None
+
+
+@require_http_methods(['GET'])
+def get_spaces_by_key(request, key_word):
+    """Get a list of Confluence space keys that contains the key word
+    Method: GET
+    Request: key_word
+    """
+    user = request.session.get('user')
+    username = user['atl_username']
+    password = user['atl_password']
+    try:
+        confluence = log_into_confluence(username, password)
+        spaces = confluence.get_all_spaces()
+        space_keys = [space['key'] for space in spaces if key_word.lower() in space['key'].lower()]
+        while len(spaces) > 0:
+            spaces = confluence.get_all_spaces(start=len(spaces))
+            space_keys.extend([space['key'] for space in spaces if key_word.lower() in space['key'].lower()])
+
+        resp = init_http_response(
+            RespCode.success.value.key, RespCode.success.value.msg)
+        resp['data'] = space_keys
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+    except:
+        resp = {'code': -1, 'msg': 'error'}
+        return HttpResponse(json.dumps(resp), content_type="application/json")
