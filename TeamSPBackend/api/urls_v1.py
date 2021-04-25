@@ -10,8 +10,9 @@ from .views.account import account_router, login, logout, update_account, delete
 from .views.subject import subject_router, update_subject, delete_subject
 from .views.team import team_router, get_team_members, team_member_configure, team_configure
 from .views.slack import get_team_data, get_all_member_data, get_member_data
-from .views.git import get_git_commits, get_git_pr
 from TeamSPBackend.api.views.project.project import import_project_in_batch
+from .views.git import get_git_commits, get_git_pr, get_git_individual_commits
+
 
 urlpatterns = [
     # Project Related API
@@ -48,6 +49,7 @@ urlpatterns = [
 
     # Git Related API
     path('git/commit', get_git_commits),
+    path('git/individual_commits', get_git_individual_commits),
     path('git/pullrequest', get_git_pr),
 
     # Confluence Related API
