@@ -349,3 +349,39 @@ def get_user_list(request, space_key):
     except:
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
+
+
+
+@require_http_methods(['GET'])
+def get_user_list(request, space_key):
+    """Get a Confluence page's contributors
+    Method: Get
+    Request: page_id
+    """
+    user = request.session.get('user')
+    username = user['atl_username']
+    password = user['atl_password']
+    try:
+        confluence = log_into_confluence(username, password)
+        response = confluence.get_space_content(space_key, limit=1, expand='restrictions.update.restrictions.user')
+        # assume the atl_username is the coordinator's own name, and other than the students, the coordinator
+        # is the only one who can read/update this space.
+        users = response["page"]["results"][0]["restrictions"]["update"]["restrictions"]["user"]["results"]
+        data = []
+        for user in users:
+            if user["username"] != username:
+                user_info = {
+                    "name": user["displayName"],
+                    "id": user["username"],
+                    "email": user["username"] + "@student.unimelb.edu.au",
+                    "picture": "https://confluence.cis.unimelb.edu.au:8443" + user["profilePicture"]["path"]
+                }
+                data.append(user_info)
+
+        resp = init_http_response(
+            RespCode.success.value.key, RespCode.success.value.msg)
+        resp['data'] = data
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+    except:
+        resp = {'code': -1, 'msg': 'error'}
+        return HttpResponse(json.dumps(resp), content_type="application/json")
