@@ -322,9 +322,13 @@ def get_user_list(request, space_key):
     password = user['atl_password']
     try:
         confluence = log_into_confluence(username, password)
-        response = confluence.get_space_content(space_key, limit=1, expand='restrictions.update.restrictions.user')
         # assume the atl_username is the coordinator's own name, and other than the students, the coordinator
-        # is the only one who can read/update this space.
+        # is the only one who can read/update this space. The coordinator must give the space update permissions to
+        # the students, and must restrict the space permissions to students only. This permission can be either
+        # set through ids of each student, or through student group ids
+
+        # by user
+        response = confluence.get_space_content(space_key, limit=1, expand='restrictions.update.restrictions.user')
         users = response["page"]["results"][0]["restrictions"]["update"]["restrictions"]["user"]["results"]
         data = []
         for user in users:
@@ -339,6 +343,7 @@ def get_user_list(request, space_key):
 
         resp = init_http_response(
             RespCode.success.value.key, RespCode.success.value.msg)
+        # by group
         resp['data'] = data
         return HttpResponse(json.dumps(resp), content_type="application/json")
     except:
