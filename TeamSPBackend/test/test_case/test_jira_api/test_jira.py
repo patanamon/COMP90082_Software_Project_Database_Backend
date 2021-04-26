@@ -1,6 +1,10 @@
 from django.test import Client, TestCase
 from TeamSPBackend.common.choices import RespCode
 
+# bridging solution for non-secure tls
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 
 class JiraTestCases(TestCase):
 
@@ -52,4 +56,12 @@ class JiraTestCases(TestCase):
         """
         team = "swen90013-2020-sp"
         response = self.client.get('/api/v11/jira/' + team + '/sprint_dates')
+        self.assertEqual(response.json()["code"], RespCode.success.value.key, "response is not success")
+
+    def test_get_jira_cfd_success(self):
+        """
+        Tests the issue per student query success
+        """
+        team = "swen90013-2020-sp"
+        response = self.client.get('/api/v11/jira/' + team + '/jira_cfd')
         self.assertEqual(response.json()["code"], RespCode.success.value.key, "response is not success")

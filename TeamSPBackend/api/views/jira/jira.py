@@ -3,14 +3,23 @@ import json
 from django.views.decorators.http import require_http_methods
 from django.http.response import HttpResponse
 
+# for file op
+import os
+import time
+
 from TeamSPBackend.common.choices import RespCode
 from TeamSPBackend.common.utils import init_http_response
 
 
-def jira_login(request):
+def session_interpreter(request):
     user = request.session.get('user')
     username = user['atl_username']
     password = user['atl_password']
+    return username, password
+
+
+def jira_login(request):
+    username, password = session_interpreter(request)
     jira = Jira(
         url='https://jira.cis.unimelb.edu.au:8444',
         username=username,
@@ -183,3 +192,29 @@ def get_issues_per_sprint(request, team):
     except:
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
+
+
+def jira_analytics(request, team):
+    username, password = session_interpreter(request)
+    with open('config.yaml', 'r') as file:
+        data = file.read()
+        data = data.replace('usernameplace', username)
+        data = data.replace('passwordplace', password)
+        data = data.replace('projectplace', team)
+    with open('config.yaml', 'w') as file:
+        file.write(data)
+    os.popen("jira-agile-metrics config.yaml --output-directory TeamSPBackend/api/views/jira")
+
+
+@require_http_methods(['GET'])
+def get_jira_cfd(request, team):
+    jira_analytics(request, team)
+    while not os.path.exists('TeamSPBackend/api/views/jira/cfd.png'):
+        time.sleep(1)
+
+    if os.path.isfile('TeamSPBackend/api/views/jira/cfd.png'):
+        time.sleep(1)
+        data = open('TeamSPBackend/api/views/jira/cfd.png', 'rb').read()
+        return HttpResponse(data, content_type="image/png")
+
+
