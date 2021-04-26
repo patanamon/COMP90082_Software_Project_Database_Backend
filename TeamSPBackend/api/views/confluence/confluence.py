@@ -291,9 +291,12 @@ def get_spaces_by_key(request, key_word):
     Method: GET
     Request: key_word
     """
-    user = request.session.get('user')
-    username = user['atl_username']
-    password = user['atl_password']
+    # TODO: get confluence username and password
+    # user = request.session.get('user')
+    # username = user['atl_username']
+    # password = user['atl_password']
+    username = ""
+    password = ""
     try:
         confluence = log_into_confluence(username, password)
         spaces = confluence.get_all_spaces()
@@ -305,46 +308,6 @@ def get_spaces_by_key(request, key_word):
         resp = init_http_response(
             RespCode.success.value.key, RespCode.success.value.msg)
         resp['data'] = space_keys
-        return HttpResponse(json.dumps(resp), content_type="application/json")
-    except:
-        resp = {'code': -1, 'msg': 'error'}
-        return HttpResponse(json.dumps(resp), content_type="application/json")
-
-
-@require_http_methods(['GET'])
-def get_user_list(request, space_key):
-    """Get a Confluence page's contributors
-    Method: Get
-    Request: page_id
-    """
-    user = request.session.get('user')
-    username = user['atl_username']
-    password = user['atl_password']
-    try:
-        confluence = log_into_confluence(username, password)
-        # assume the atl_username is the coordinator's own name, and other than the students, the coordinator
-        # is the only one who can read/update this space. The coordinator must give the space update permissions to
-        # the students, and must restrict the space permissions to students only. This permission can be either
-        # set through ids of each student, or through student group ids
-
-        # by user
-        response = confluence.get_space_content(space_key, limit=1, expand='restrictions.update.restrictions.user')
-        users = response["page"]["results"][0]["restrictions"]["update"]["restrictions"]["user"]["results"]
-        data = []
-        for user in users:
-            if user["username"] != username:
-                user_info = {
-                    "name": user["displayName"],
-                    "id": user["username"],
-                    "email": user["username"] + "@student.unimelb.edu.au",
-                    "picture": "https://confluence.cis.unimelb.edu.au:8443" + user["profilePicture"]["path"]
-                }
-                data.append(user_info)
-
-        resp = init_http_response(
-            RespCode.success.value.key, RespCode.success.value.msg)
-        # by group
-        resp['data'] = data
         return HttpResponse(json.dumps(resp), content_type="application/json")
     except:
         resp = {'code': -1, 'msg': 'error'}
