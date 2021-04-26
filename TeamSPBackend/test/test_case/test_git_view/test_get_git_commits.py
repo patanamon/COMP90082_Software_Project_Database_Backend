@@ -3,7 +3,6 @@ from django.test import TestCase, Client
 from TeamSPBackend.api.views.git import get_git_commits
 
 from TeamSPBackend.test.utils import object_creation_helpers, login_helpers
-#zisheng test
 
 class GetGitCommitsTestCase(TestCase):
     @classmethod
@@ -28,6 +27,7 @@ class GetGitCommitsTestCase(TestCase):
         response = self.client.post(url, data=data, content_type="application/json")
         self.assertNotEqual(response.json()["data"], None)
         # self.assertEqual(response.status_code, 200, "response code is not 200")
+        # print(response.json())
 
         # d = get_git_commits(request = data)
         # self.assertEqual(d.status_code, 200)
@@ -68,6 +68,17 @@ class GetGitCommitsTestCase(TestCase):
             elif commit['date'] > 1611141532000:
                 flag = False
         self.assertEqual(flag, True)
+        # print("test_git_date:")
+        # print(response)
+
+    def test_git_pr(self):
+        url = "/api/v1/git/pullrequest"
+        data = {
+            "url": "https://github.com/LikwunCheung/TeamSPBackend"
+        }
+        response = self.client.post(url, data=data, content_type="application/json")
+        print("pull request json file:")
+        print(response.json())
 
 
 if __name__ == '__main__':

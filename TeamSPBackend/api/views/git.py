@@ -12,12 +12,10 @@ from TeamSPBackend.common.utils import make_json_response, check_user_login, bod
 
 logger = logging.getLogger('django')
 
-
 @require_http_methods(['POST'])
 @check_user_login()
 @check_body
 def get_git_commits(request, body, *args, **kwargs):
-
     git_dto = GitDTO()
     body_extract(body, git_dto)
 
@@ -32,6 +30,7 @@ def get_git_commits(request, body, *args, **kwargs):
     file_changed = 0
     insertion = 0
     deletion = 0
+    # 感觉这个没必要啊，file_change什么的，有点蠢，因为重复率太高了
     for commit in commits:
         file_changed += commit['file_changed']
         insertion += commit['insertion']
@@ -49,6 +48,7 @@ def get_git_commits(request, body, *args, **kwargs):
     resp = init_http_response_my_enum(RespCode.success, data)
     return make_json_response(resp=resp)
 
+# pull request
 @require_http_methods(['POST'])
 @check_user_login()
 @check_body
@@ -66,6 +66,7 @@ def get_git_pr(request, body, *args, **kwargs):
     author = set()
     for commit in commits:
         author.add(commit['author'])
+    # 个人感觉这里做一个合并，变成字典：{author1: [commits...], author2: [cmits...], ...}
     data = dict(
         total=total,
         author=list(author),
