@@ -37,3 +37,11 @@ class JiraTestCases(TestCase):
         student = "xinbos"
         response = self.client.get('/api/v11/jira/' + team + '/comments/' + student)
         self.assertEqual(response.json()["code"], RespCode.success.value.key, "response is not success")
+
+    def test_get_sprint_dates_success(self):
+        """
+        Tests the issue per student query success
+        """
+        team = "swen90013-2020-sp"
+        response = self.client.get('/api/v11/jira/' + team + '/sprint_dates')
+        self.assertEqual(response.json()["code"], RespCode.success.value.key, "response is not success")

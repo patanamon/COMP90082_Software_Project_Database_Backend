@@ -80,6 +80,7 @@ def get_issues_team(request, team):
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
 
+
 @require_http_methods(['GET'])
 def get_comment_count_individual(request, team, student):
     try:
@@ -92,6 +93,63 @@ def get_comment_count_individual(request, team, student):
 
         resp['username'] = student
         resp['comments'] = count / 16
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+    except:
+        resp = {'code': -1, 'msg': 'error'}
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+
+
+@require_http_methods(['GET'])
+def get_sprints_dates(request, team):
+    try:
+        jira = jira_login(request)
+        resp = init_http_response(
+            RespCode.success.value.key, RespCode.success.value.msg)
+
+        issues = json.dumps(jira.get_all_project_issues(team, fields='*all'))
+        split = issues.split("name=Sprint 1,startDate=", 1)
+        split2 = split[1].split("endDate=", 1)
+        if split[1][:10].startswith('20'):
+            resp['sprint_1_start'] = split[1][:10]
+        else:
+            resp['sprint_1_start'] = "null"
+        if split[1][:10].startswith('20'):
+            resp['sprint_1_end'] = split2[1][:10]
+        else:
+            resp['sprint_1_end'] = "null"
+
+        split = issues.split("name=Sprint 2,startDate=", 1)
+        split2 = split[1].split("endDate=", 1)
+        if split[1][:10].startswith('20'):
+            resp['sprint_2_start'] = split[1][:10]
+        else:
+            resp['sprint_2_start'] = "null"
+        if split[1][:10].startswith('20'):
+            resp['sprint_2_end'] = split2[1][:10]
+        else:
+            resp['sprint_2_end'] = "null"
+
+        split = issues.split("name=Sprint 3,startDate=", 1)
+        split2 = split[1].split("endDate=", 1)
+        if split[1][:10].startswith('20'):
+            resp['sprint_3_start'] = split[1][:10]
+        else:
+            resp['sprint_3_start'] = "null"
+        if split[1][:10].startswith('20'):
+            resp['sprint_3_end'] = split2[1][:10]
+        else:
+            resp['sprint_3_end'] = "null"
+
+        split = issues.split("name=Sprint 4,startDate=", 1)
+        split2 = split[1].split("endDate=", 1)
+        if split[1][:10].startswith('20'):
+            resp['sprint_4_start'] = split[1][:10]
+        else:
+            resp['sprint_4_start'] = "null"
+        if split[1][:10].startswith('20'):
+            resp['sprint_4_end'] = split2[1][:10]
+        else:
+            resp['sprint_4_end'] = "null"
         return HttpResponse(json.dumps(resp), content_type="application/json")
     except:
         resp = {'code': -1, 'msg': 'error'}

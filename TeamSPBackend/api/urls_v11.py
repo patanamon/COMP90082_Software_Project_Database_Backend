@@ -68,11 +68,12 @@ urlpatterns = [
     path('jira/<team>/tickets/<student>', jira.get_issues_individual),
     path('jira/<team>/tickets', jira.get_issues_team),
     path('jira/<team>/comments/<student>', jira.get_comment_count_individual),
+    path('jira/<team>/sprint_dates', jira.get_sprints_dates),
     #path('jira/<team>/jiracfd', helpJira.get_jira_CFD),
     #path('jira/<team>/jiraburn', helpJira.get_jira_burn),
     #path('jira/<team>/jiraburnforecast', helpJira.get_jira_burn_forecast),
     
-    #path('jira/<team>/sprintdates', helpJira.get_sprints_dates),
+    #
     #path('jira/<team>/issuespersprint', helpJira.get_issues_per_sprint),
 
 
