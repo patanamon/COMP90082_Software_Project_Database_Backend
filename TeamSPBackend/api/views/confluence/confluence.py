@@ -6,7 +6,9 @@ from requests.auth import HTTPBasicAuth
 from TeamSPBackend.common.choices import RespCode
 from django.views.decorators.http import require_http_methods
 from django.http.response import HttpResponse, HttpResponseRedirect, HttpResponseNotAllowed, HttpResponseBadRequest
-from TeamSPBackend.common.utils import make_json_response, init_http_response, check_user_login, check_body, body_extract, mills_timestamp
+from TeamSPBackend.common.utils import make_json_response, init_http_response, check_user_login, check_body, \
+    body_extract, mills_timestamp
+from TeamSPBackend.confluence.models import UserList
 
 
 @require_http_methods(['GET'])
@@ -189,7 +191,6 @@ def get_user_details(request, member):
 
 @require_http_methods(['GET'])
 def get_subject_supervisors(request, subjectcode, year):
-
     user = request.session.get('user')
     username = user['atl_username']
     password = user['atl_password']
@@ -310,7 +311,6 @@ def get_spaces_by_key(request, key_word):
         return HttpResponse(json.dumps(resp), content_type="application/json")
 
 
-
 @require_http_methods(['GET'])
 def get_user_list(request, space_key):
     """Get a Confluence page's contributors
@@ -351,38 +351,22 @@ def get_user_list(request, space_key):
         return HttpResponse(json.dumps(resp), content_type="application/json")
 
 
-
 @require_http_methods(['GET'])
 def get_user_list(request, space_key):
     """Get a Confluence page's contributors
     Method: Get
-    Request: page_id
+    Parameter: page_id
     """
-    user = request.session.get('user')
-    username = user['atl_username']
-    password = user['atl_password']
     try:
-        # assume other than the students, the coordinator is the only one who can read/update this space.
-        confluence = log_into_confluence(username, password)
         data = []
-        user_set = set()
-        # by user
-        response = confluence.get_space_content(space_key, limit=1,
-            expand='restrictions.update.restrictions.user,restrictions.update.restrictions.group')
-        users = response["page"]["results"][0]["restrictions"]["update"]["restrictions"]["user"]["results"]
-        for user in users:
-            if user["username"] != username:
-                data.append(get_user_detail(user))
-                user_set.add(user["username"])
-        # by group
-        groups = response["page"]["results"][0]["restrictions"]["update"]["restrictions"]["group"]["results"]
-        for group in groups:
-            members = confluence.get_group_members(group["name"])
-            for member in members:
-                if member["username"] not in user_set:
-                    data.append(get_user_detail(member))
-                    user_set.add(member["username"])
-
+        for user_info in UserList.objects.filter(space_key=space_key):
+            user_detail = {
+                "name": user_info.user_name,
+                "id": user_info.user_id,
+                "email": user_info.email,
+                "picture": user_info.picture
+            }
+            data.append(user_detail)
         resp = init_http_response(
             RespCode.success.value.key, RespCode.success.value.msg)
         resp['data'] = data
@@ -390,13 +374,3 @@ def get_user_list(request, space_key):
     except:
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
-
-
-def get_user_detail(user):
-    user_info = {
-        "name": user["displayName"],
-        "id": user["username"],
-        "email": user["username"] + "@student.unimelb.edu.au",
-        "picture": "https://confluence.cis.unimelb.edu.au:8443" + user["profilePicture"]["path"]
-    }
-    return user_info
