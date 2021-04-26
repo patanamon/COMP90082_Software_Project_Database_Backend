@@ -316,9 +316,9 @@ def get_spaces_by_key(request, key_word):
 
 @require_http_methods(['GET'])
 def get_user_list(request, space_key):
-    """Get a Confluence page's contributors
+    """Get the user list in a Confluence space
     Method: Get
-    Parameter: page_id
+    Parameter: space_key
     """
     try:
         data = []
