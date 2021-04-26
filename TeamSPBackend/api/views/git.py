@@ -16,7 +16,9 @@ logger = logging.getLogger('django')
 @check_user_login()
 @check_body
 def get_git_individual_commits(request, body, *args, **kwargs):
+    # create GitDTO object
     git_dto = GitDTO()
+    # extract body information and store them in GitDTO.
     body_extract(body, git_dto)
 
     if not git_dto.valid_url:
@@ -24,6 +26,7 @@ def get_git_individual_commits(request, body, *args, **kwargs):
         return make_json_response(resp=resp)
     git_dto.url = git_dto.url.lstrip('$')
 
+    # request commits from  github api
     commits = get_commits(git_dto.url, git_dto.author, git_dto.branch, git_dto.second_after, git_dto.second_before)
     CommitCount = defaultdict(lambda: 0)
     for commit in commits:
@@ -43,12 +46,14 @@ def get_git_individual_commits(request, body, *args, **kwargs):
 @check_body
 def get_git_commits(request, body, *args, **kwargs):
     git_dto = GitDTO()
+
     body_extract(body, git_dto)
 
     if not git_dto.valid_url:
         resp = init_http_response_my_enum(RespCode.invalid_parameter)
         return make_json_response(resp=resp)
     git_dto.url = git_dto.url.lstrip('$')
+
 
     commits = get_commits(git_dto.url, git_dto.author, git_dto.branch, git_dto.second_after, git_dto.second_before)
     total = len(commits)
