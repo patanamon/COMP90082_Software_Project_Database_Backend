@@ -79,3 +79,20 @@ def get_issues_team(request, team):
     except:
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
+
+@require_http_methods(['GET'])
+def get_comment_count_individual(request, team, student):
+    try:
+        jira = jira_login(request)
+
+        issues = json.dumps(jira.get_all_project_issues(team, fields='comment'))
+        count = issues.count(student)
+        resp = init_http_response(
+            RespCode.success.value.key, RespCode.success.value.msg)
+
+        resp['username'] = student
+        resp['comments'] = count / 16
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+    except:
+        resp = {'code': -1, 'msg': 'error'}
+        return HttpResponse(json.dumps(resp), content_type="application/json")
