@@ -4,7 +4,7 @@ from django.urls import path
 
 from TeamSPBackend.api.views.confluence import confluence
 from TeamSPBackend.api.views.confluence import page_contributions
-from TeamSPBackend.api.views.jira import helpJira
+#from TeamSPBackend.api.views.jira import helpJira
 from .views.invitation import invitation_router, invite_accept
 from .views.account import account_router, login, logout, update_account, delete, atl_login, supervisor_router
 from .views.subject import subject_router, update_subject, delete_subject
@@ -62,15 +62,16 @@ urlpatterns = [
     # COMP90082 21 S1 sprint1
     path('confluence/spaces/<key_word>', confluence.get_spaces_by_key),
 
+
     # Jira Related API
-    path('jira/<team>/jiracfd', helpJira.get_jira_CFD),
-    path('jira/<team>/jiraburn', helpJira.get_jira_burn),
-    path('jira/<team>/jiraburnforecast', helpJira.get_jira_burn_forecast),
-    path('jira/<team>/tickets/<student_id>', helpJira.get_issues_one_student),
-    path('jira/<team>/tickets', helpJira.get_total_issues_team),
-    path('jira/<team>/sprintdates', helpJira.get_sprints_dates),
-    path('jira/<team>/issuespersprint', helpJira.get_issues_per_sprint),
-    path('jira/<team>/comments/<student_id>', helpJira.get_comment_count_one_student),
+    #path('jira/<team>/jiracfd', helpJira.get_jira_CFD),
+    #path('jira/<team>/jiraburn', helpJira.get_jira_burn),
+    #path('jira/<team>/jiraburnforecast', helpJira.get_jira_burn_forecast),
+    #path('jira/<team>/tickets/<student_id>', helpJira.get_issues_one_student),
+    #path('jira/<team>/tickets', helpJira.get_total_issues_team),
+    #path('jira/<team>/sprintdates', helpJira.get_sprints_dates),
+    #path('jira/<team>/issuespersprint', helpJira.get_issues_per_sprint),
+    #path('jira/<team>/comments/<student_id>', helpJira.get_comment_count_one_student),
 
     # Slack Related API
     # path('slack', slack_router),
