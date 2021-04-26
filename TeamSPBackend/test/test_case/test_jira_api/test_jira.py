@@ -43,5 +43,13 @@ class JiraTestCases(TestCase):
         Tests the issue per student query success
         """
         team = "swen90013-2020-sp"
+        response = self.client.get('/api/v11/jira/' + team + '/issues_per_sprint')
+        self.assertEqual(response.json()["code"], RespCode.success.value.key, "response is not success")
+
+    def test_get_issues_per_sprint_success(self):
+        """
+        Tests the issue per student query success
+        """
+        team = "swen90013-2020-sp"
         response = self.client.get('/api/v11/jira/' + team + '/sprint_dates')
         self.assertEqual(response.json()["code"], RespCode.success.value.key, "response is not success")

@@ -154,3 +154,32 @@ def get_sprints_dates(request, team):
     except:
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
+
+
+@require_http_methods(['GET'])
+def get_issues_per_sprint(request, team):
+    try:
+        jira = jira_login(request)
+        resp = init_http_response(
+            RespCode.success.value.key, RespCode.success.value.msg)
+        issues = json.dumps(jira.get_all_project_issues(team, fields='*all'))
+        split = issues.split("[id=")
+        sprint_ids = []
+        for str in split[1:]:
+            split2 = str.split(",")
+            id = split2[0]
+            if id not in sprint_ids:
+                sprint_ids.append(id)
+        sprint_ids.sort()
+        i = 1
+        for id in sprint_ids:
+            jql_request = 'Sprint = id'
+            jql_request = jql_request.replace('id', id)
+            issues = jira.jql(jql_request)
+            count_issues_total = issues['total']
+            resp[i] = count_issues_total
+            i += 1
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+    except:
+        resp = {'code': -1, 'msg': 'error'}
+        return HttpResponse(json.dumps(resp), content_type="application/json")
