@@ -1,5 +1,5 @@
 from django.test import TestCase
-
+from TeamSPBackend.git.models import StudentCommitCounts
 from TeamSPBackend.test.utils import object_creation_helpers, login_helpers
 
 class GetGitCommitsTestCase(TestCase):
@@ -44,7 +44,9 @@ class GetGitCommitsTestCase(TestCase):
         tag_1 = 0
         tag_2 = 1
         response = self.client.post(url, data=data, content_type="application/json")
-        print(response.json())
+        all_entries =StudentCommitCounts.objects.all()
+        for item in all_entries:
+            print(str(item.student_name)+" : "+str(item.commit_counts))
         # for commit in response.json()["data"]['commits']:
         #     if commit['author'] != 'Procyon1996':
         #         tag_1 = 1

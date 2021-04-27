@@ -9,7 +9,7 @@ from TeamSPBackend.common.github_util import get_commits, get_pull_request
 from TeamSPBackend.api.dto.dto import GitDTO
 from TeamSPBackend.common.choices import RespCode
 from TeamSPBackend.common.utils import make_json_response, check_user_login, body_extract, mills_timestamp, check_body, init_http_response_my_enum
-
+from TeamSPBackend.git.models import StudentCommitCounts
 logger = logging.getLogger('django')
 
 @require_http_methods(['POST'])
@@ -43,6 +43,14 @@ def get_git_individual_commits(request, body, *args, **kwargs):
             "student":key,
             "commit_count":value
         }
+        if StudentCommitCounts.objects.filter(student_name=key).exists():
+            user = StudentCommitCounts.objects.get(student_name=key)
+            if value!=user.commit_count:
+                StudentCommitCounts.objects.filter(student_name=key).update(commit_counts=value)
+        else:
+            user=StudentCommitCounts(student_name=key,commit_counts=value)
+            user.save()
+
         data.append(temp)
 
 
