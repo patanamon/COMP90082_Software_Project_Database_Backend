@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 from collections import defaultdict
-import logging
-import ujson
+import logging, time
 
 from django.views.decorators.http import require_http_methods
 
 from TeamSPBackend.common.github_util import get_commits, get_pull_request
 from TeamSPBackend.api.dto.dto import GitDTO
 from TeamSPBackend.common.choices import RespCode
-from TeamSPBackend.common.utils import make_json_response, check_user_login, body_extract, mills_timestamp, check_body, init_http_response_my_enum
-from TeamSPBackend.git.models import StudentCommitCounts
+from TeamSPBackend.common.utils import make_json_response, check_user_login, body_extract, mills_timestamp, check_body, init_http_response_my_enum, transformTimestamp
+from TeamSPBackend.git.models import StudentCommitCounts, GitCommitCounts
 logger = logging.getLogger('django')
 
 @require_http_methods(['POST'])
@@ -62,8 +61,8 @@ def get_git_individual_commits(request, body, *args, **kwargs):
 @check_user_login()
 @check_body
 def get_git_commits(request, body, *args, **kwargs):
+    # body is a dict and use body_extract to construct git_dao which includes url, branch, author, before and after(time)
     git_dto = GitDTO()
-
     body_extract(body, git_dto)
 
     if not git_dto.valid_url:
@@ -71,29 +70,40 @@ def get_git_commits(request, body, *args, **kwargs):
         return make_json_response(resp=resp)
     git_dto.url = git_dto.url.lstrip('$')
 
+    before = transformTimestamp(git_dto.second_before)
+    after = transformTimestamp(git_dto.second_after)
 
-    commits = get_commits(git_dto.url, git_dto.author, git_dto.branch, git_dto.second_after, git_dto.second_before)
+
+    if GitCommitCounts.objects.filter(space_key=git_dto.url, query_date=before).exists()\
+            and GitCommitCounts.objects.filter(space_key=git_dto.url, query_date=after).exists():
+        count_after = GitCommitCounts.objects.get(space_key=git_dto.url, query_date=after).commit_counts
+        count_before = GitCommitCounts.objects.get(space_key=git_dto.url, query_date=before).commit_counts
+        # res = {'space_key': git_dto.url, 'commit_count': count_after - count_before, 'date_from':before, 'date_to': after}
+        data = dict(
+            space_key=git_dto.url,
+            commit_count=count_after - count_before,
+            date_from=before,
+            date_to=after
+        )
+        resp = init_http_response_my_enum(RespCode.success, data)
+        return make_json_response(resp=resp)
+
+    commits = get_commits(git_dto.url, git_dto.author, git_dto.branch, time.localtime(), 1)
     total = len(commits)
-    author = set()
-    file_changed = 0
-    insertion = 0
-    deletion = 0
-    # 感觉这个没必要啊，file_change什么的，有点蠢，因为重复率太高了
-    for commit in commits:
-        file_changed += commit['file_changed']
-        insertion += commit['insertion']
-        deletion += commit['deletion']
-        author.add(commit['author'])
+    relation_id = 1
+    info = GitCommitCounts(relation_id=relation_id,
+                           space_key=git_dto.url,
+                           commit_counts=total,
+                           query_date=transformTimestamp(time.localtime()))
+    info.save()
 
     data = dict(
-        total=total,
-        author=list(author),
-        file_changed=file_changed,
-        insertion=insertion,
-        deletion=deletion,
-        commits=commits,
+        space_key=git_dto.url,
+        commit_count=total,
+        date_from=before,
+        date_to=after
     )
-  #  print(data)
+
     resp = init_http_response_my_enum(RespCode.success, data)
     return make_json_response(resp=resp)
 
