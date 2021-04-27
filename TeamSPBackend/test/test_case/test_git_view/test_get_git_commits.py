@@ -1,6 +1,4 @@
-from django.test import TestCase, Client
-
-from TeamSPBackend.api.views.git import get_git_commits
+from django.test import TestCase
 
 from TeamSPBackend.test.utils import object_creation_helpers, login_helpers
 
