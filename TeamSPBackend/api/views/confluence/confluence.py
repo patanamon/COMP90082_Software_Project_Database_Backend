@@ -316,8 +316,8 @@ def get_page_count_by_time(request, space_key):
     Method: GET
     Request: space_key
     """
-    username = "pinwang"
-    password = "W11p30#5776"
+    username = ""
+    password = ""
     from datetime import datetime
     import time
     try:
