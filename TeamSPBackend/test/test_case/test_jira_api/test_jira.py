@@ -11,8 +11,8 @@ class JiraTestCases(TestCase):
     def setUp(self):
         session = self.client.session
         session["user"] = {
-            "atl_username": "",
-            "atl_password": ""
+            "atl_username": "xiefx",
+            "atl_password": "Qq970128!"
         }   
         session.save()
 

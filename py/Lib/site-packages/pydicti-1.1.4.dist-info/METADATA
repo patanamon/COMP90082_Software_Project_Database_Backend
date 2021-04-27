@@ -1,0 +1,285 @@
+Metadata-Version: 2.1
+Name: pydicti
+Version: 1.1.4
+Summary: Case insensitive derivable dictionary
+Home-page: https://github.com/coldfix/pydicti
+Author: Thomas Gläßle
+Author-email: t_glaessle@gmx.de
+License: WTFPL
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Topic :: Software Development
+Requires-Python: >=2.7
+
+pydicti
+-------
+|Tests| |Coverage| |Version| |License|
+
+Installation
+~~~~~~~~~~~~
+
+You can install the newest version of *pydicti* from PyPI_:
+
+.. code:: bash
+
+    pip install pydicti
+
+Alternatively, you can just take the file ``pydicti.py`` and redistribute
+it with your application.
+
+.. _PyPI: https://pypi.python.org/pypi/pydicti/
+
+
+Overview
+~~~~~~~~
+
+- ``class dicti``: default case insensitive dictionary type
+- ``class odicti``: ordered case insensitive dictionary type
+- ``def build_dicti``: create a case insensitive dictionary class
+- ``def Dicti``: create a case insensitive copy of a dictionary
+
+dicti
+=====
+
+Objects of type ``dicti`` are dictionaries that feature case insensitive
+item access:
+
+.. code:: python
+
+    >>> d = dicti(Hello='foo', world='bar')
+    >>> d['heLLO']
+    'foo'
+    >>> 'WOrld' in d
+    True
+
+Internally however, the keys retain their original case:
+
+.. code:: python
+
+    >>> sorted(d.keys())
+    ['Hello', 'world']
+
+odicti
+======
+
+The type ``odicti`` instanciates order-preserving case insensitive
+dictionaries:
+
+.. code:: python
+
+    >>> odicti(zip('abc', range(3)))
+    Dicti(OrderedDict([('a', 0), ('b', 1), ('c', 2)]))
+
+
+build_dicti
+===========
+
+With ``build_dicti`` you can create custom case insensitive dictionaries.
+This function is what is used to create the ``pydicti.dicti`` and
+``pydicti.odicti`` types. Note that calling ``build_dicti`` several times
+with the same argument will result in identical types:
+
+.. code:: python
+
+    >>> build_dicti(dict) is dicti
+    True
+    >>> build_dicti(OrderedDict) is odicti
+    True
+
+``build_dicti`` uses subclassing to inherit the semantics of the given base
+dictionary type:
+
+.. code:: python
+
+    >>> issubclass(odicti, OrderedDict)
+    True
+
+Dicti
+=====
+
+The function ``Dicti`` is convenient for creating case insensitive
+copies of dictionary instances:
+
+.. code:: python
+
+    >>> o = OrderedDict(zip('abcdefg', range(7)))
+    >>> oi = Dicti(o)
+    >>> type(oi) is odicti
+    True
+
+
+JSON
+~~~~
+
+The subclassing approach allows to plug your dictionary instance into
+places where typechecking with ``isinstance`` is used, like in the json_
+module:
+
+.. code:: python
+
+    >>> import json
+    >>> d == json.loads(json.dumps(d), object_hook=dicti)
+    True
+
+.. _json: http://docs.python.org/3.3/library/json.html
+
+You can use ``json.loads(s, object_pairs_hook=odicti)`` to
+deserialize ordered dictionaries.
+
+
+Pitfalls
+~~~~~~~~
+
+The equality comparison tries preserves the semantics of the base type as
+well as reflexitivity. This has impact on the transitivity of the
+comparison operator:
+
+.. code:: python
+
+    >>> i = dicti(oi)
+    >>> roi = odicti(reversed(list(oi.items())))
+    >>> roi == i and i == oi
+    True
+    >>> oi != roi and roi != oi  # NOT transitive!
+    True
+    >>> oi == i and i == oi      # reflexive
+    True
+
+The `coercion rules`_ in python allow this to work pretty well when
+performing comparisons between types that are subclasses of each other. Be
+careful otherwise, however.
+
+.. _`coercion rules`: http://docs.python.org/2/reference/datamodel.html#coercion-rules
+
+
+License
+~~~~~~~
+
+Copyright © 2013 Thomas Gläßle <t_glaessle@gmx.de>
+
+This work  is free. You can  redistribute it and/or modify  it under the
+terms of the Do What The Fuck  You Want To Public License, Version 2, as
+published by Sam Hocevar. See the COPYING file for more details.
+
+This program  is free software.  It comes  without any warranty,  to the
+extent permitted by applicable law.
+
+
+.. Badges:
+
+.. |Version| image::    https://img.shields.io/pypi/v/pydicti.svg
+   :target:             https://pypi.python.org/pypi/pydicti
+   :alt:                Latest Version
+
+.. |Tests| image::      https://api.travis-ci.org/coldfix/pydicti.svg?branch=master
+   :target:             https://travis-ci.org/coldfix/pydicti
+   :alt:                Test Status
+
+.. |Coverage| image::   https://coveralls.io/repos/coldfix/pydicti/badge.svg?branch=master
+   :target:             https://coveralls.io/r/coldfix/pydicti
+   :alt:                Coverage
+
+.. |License| image::    https://img.shields.io/pypi/l/pydicti.svg
+   :target:             https://github.com/coldfix/pydicti/blob/master/COPYING
+   :alt:                License
+
+CHANGELOG
+~~~~~~~~~
+
+1.1.4
+=====
+Date: 17.10.2020
+
+- use ``str.casefold()`` on python3
+- make normalization function a parameter of ``build_dict``, so that
+  user-defined normalization functions can be passed
+
+
+1.1.3
+=====
+Date: 28.06.2019
+
+- avoid key recomputation in ``__setitem__``
+
+
+1.1.2
+=====
+Date: 28.06.2019
+
+- leave item order invariant under assignment in odicti (#2)
+- leave key case invariant under assignment
+
+
+1.1.1
+=====
+Date: 25.03.2019
+
+- fix deprecated MutableMapping import (error on py38)
+
+
+1.1.0
+=====
+Date: 19.03.2019
+
+- drop py2.6 support
+- fix version number in long_description
+
+
+1.0.0
+=====
+Date: 19.03.2019
+
+- make str representation more dict-like
+- misc cleanup
+
+
+0.0.6
+=====
+Date: 08.09.2016
+
+- fix UnicodeDecodeError in setup when UTF-8 is not the default encoding
+
+
+0.0.5
+=====
+Date: 18.05.2016
+
+- fix pickling on py 3.5
+- the 'name' parameter to build_dicti can now be a qualname
+
+
+0.0.4
+=====
+Date: 01.02.2014
+
+- add coverage reports
+- use more extensive unit tests
+- add support for pickle
+
+
+0.0.3
+=====
+Date: 26.01.2014
+
+- add support for python26
+- make dependency on ``OrderedDict`` optional
+- migrate to setuptools in order to use testing commands
+- support `ordereddict.OrderedDict`_ as fallback
+
+.. _`ordereddict.OrderedDict`: https://pypi.python.org/pypi/ordereddict/1.1
+
+0.0.2
+=====
+Date: 29.12.2013
+
+- fix ``dicti.pop``
+- support ``deepcopy(dicti)``
+- make nosetest automatically execute the doctests
+
+
+
