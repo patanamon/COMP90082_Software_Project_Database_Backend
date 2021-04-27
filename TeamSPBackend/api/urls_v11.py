@@ -64,12 +64,18 @@ urlpatterns = [
     path('confluence/spaces/<key_word>', confluence.get_spaces_by_key),
 
     # Jira Related API
-    
+
+    # legacy
     path('jira/<team>/tickets/<student>', jira.get_issues_individual),
     path('jira/<team>/tickets', jira.get_issues_team),
     path('jira/<team>/comments/<student>', jira.get_comment_count_individual),
     path('jira/<team>/sprint_dates', jira.get_sprints_dates),
     path('jira/<team>/issues_per_sprint', jira.get_issues_per_sprint),
+
+    # new
+    path('jira/<team>/ticket_count', jira.get_ticket_count_team_timestamped),
+
+    # legacy but not working
     path('jira/<team>/jira_cfd', jira.get_jira_cfd),
     #path('jira/<team>/jiraburn', helpJira.get_jira_burn),
     #path('jira/<team>/jiraburnforecast', helpJira.get_jira_burn_forecast),

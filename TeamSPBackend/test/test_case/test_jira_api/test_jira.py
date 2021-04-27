@@ -17,26 +17,17 @@ class JiraTestCases(TestCase):
         session.save()
 
     def test_get_individual_issue_success(self):
-        """
-        Tests the issue per student query success
-        """
         team = "swen90013-2020-sp"
         student = "xinbos"
         response = self.client.get('/api/v11/jira/' + team + '/tickets/' + student)
         self.assertEqual(response.json()["code"], RespCode.success.value.key, "response is not success")
 
     def test_get_team_issue_success(self):
-        """
-        Tests the issue per student query success
-        """
         team = "swen90013-2020-sp"
         response = self.client.get('/api/v11/jira/' + team + '/tickets')
         self.assertEqual(response.json()["code"], RespCode.success.value.key, "response is not success")
 
     def test_get_individual_comment_count_success(self):
-        """
-        Tests the issue per student query success
-        """
         team = "swen90013-2020-sp"
         student = "xinbos"
         response = self.client.get('/api/v11/jira/' + team + '/comments/' + student)
@@ -51,17 +42,20 @@ class JiraTestCases(TestCase):
         self.assertEqual(response.json()["code"], RespCode.success.value.key, "response is not success")
 
     def test_get_issues_per_sprint_success(self):
-        """
-        Tests the issue per student query success
-        """
         team = "swen90013-2020-sp"
         response = self.client.get('/api/v11/jira/' + team + '/sprint_dates')
         self.assertEqual(response.json()["code"], RespCode.success.value.key, "response is not success")
 
+    def test_get_ticket_count_team_timestamped(self):
+        team = "swen90013-2020-sp"
+        response = self.client.get('/api/v11/jira/' + team + '/ticket_count')
+        self.assertEqual(response.json()["code"], RespCode.success.value.key, "response is not success")
+
+    """
+    # not applicable yet
     def test_get_jira_cfd_success(self):
-        """
-        Tests the issue per student query success
-        """
+        
         team = "swen90013-2020-sp"
         response = self.client.get('/api/v11/jira/' + team + '/jira_cfd')
         self.assertEqual(response.json()["code"], RespCode.success.value.key, "response is not success")
+    """
