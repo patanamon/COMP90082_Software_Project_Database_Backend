@@ -46,7 +46,6 @@ def insert_user(user, space_key):
                  picture="https://confluence.cis.unimelb.edu.au:8443" + user["profilePicture"]["path"],
                  space_key=space_key)
     u.save()
-    print(u)
 
 
 utils.start_schedule(update_user_list, 60 * 60 * 24)  # update user list on a daily basis
