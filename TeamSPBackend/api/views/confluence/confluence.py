@@ -308,3 +308,55 @@ def get_spaces_by_key(request, key_word):
     except:
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
+
+
+@require_http_methods(['GET'])
+def get_page_count_by_time(request, space_key):
+    """Get a list of time, page count pairs
+    Method: GET
+    Request: space_key
+    """
+    username = "pinwang"
+    password = "W11p30#5776"
+    from datetime import datetime
+    import time
+    try:
+        conf = log_into_confluence(username, password)
+        contents = conf.get_space_content(space_key=space_key, content_type="page", expand="history")
+        results = contents["results"]
+        while contents["size"] == contents["limit"]:
+            contents = conf.get_space_content(space_key=space_key, start=len(results), content_type="page", expand="history")
+            results.extend(contents["results"])
+
+        delta_page_count = {}
+        days = []
+        for result in results:
+            # "2021-02-26T10:34:27.631+11:00"
+            time_str = result["history"]["createdDate"]
+            time_str = time_str[:11]+"00:00:00.001"+time_str[-6:]
+            page_create_time = int(time.mktime(datetime.fromisoformat(time_str).timetuple()))
+            if page_create_time in delta_page_count:
+                delta_page_count[page_create_time] += 1
+            else:
+                delta_page_count[page_create_time] = 1
+                days.append(page_create_time)
+
+        days.sort()
+        page_count = 0
+        data = []
+        cur_time = int(time.mktime(datetime.now().timetuple()))
+        for day in range(days[0], cur_time, 60*60*24):
+            if day in delta_page_count:
+                page_count += delta_page_count[day]
+            data.append({
+                "time": day,
+                "page_count": page_count
+            })
+
+        resp = init_http_response(
+            RespCode.success.value.key, RespCode.success.value.msg)
+        resp['data'] = data
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+    except:
+        resp = {'code': -1, 'msg': 'error'}
+        return HttpResponse(json.dumps(resp), content_type="application/json")
