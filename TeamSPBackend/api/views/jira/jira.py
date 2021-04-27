@@ -1,3 +1,10 @@
+# TODO: space_key is not used in jira, clarification required, currently we use Project in JQL
+# TODO: illegal value assignments in legacy code, specifically response only have data field.
+# TODO: Re-adapt to fit legacy API documentation, include: variable rename, django app integration
+# TODO: Specify except statement to avoid accidental termination
+# TODO: django app integration
+# TODO: charts output
+
 from atlassian import Jira
 import json
 import time
@@ -6,8 +13,6 @@ from django.views.decorators.http import require_http_methods
 from django.http.response import HttpResponse
 
 # for file op
-# TODO: charts output
-# TODO: django app integration
 import os
 import time
 
@@ -17,6 +22,7 @@ from TeamSPBackend.common.utils import init_http_response
 
 # helper functions
 def session_interpreter(request):
+    """ Extracts credentials from session"""
     user = request.session.get('user')
     username = user['atl_username']
     password = user['atl_password']
@@ -24,6 +30,7 @@ def session_interpreter(request):
 
 
 def jira_login(request):
+    """ Handles Jira login"""
     username, password = session_interpreter(request)
     jira = Jira(
         url='https://jira.cis.unimelb.edu.au:8444',
@@ -34,9 +41,32 @@ def jira_login(request):
     return jira
 
 
-# legacy
+def get_project_key(project, jira):
+    """"Get corresponding project key"""
+    jira_resp = jira.projects()
+    result = ""
+    for d in jira_resp:
+        if d['name'].lower() == project:
+            result = d['key']
+    return result
+
+
+def get_member_names(project_key, jira):
+    """"Get team members with project key"""
+    jira_resp = jira.get_all_assignable_users_for_project(project_key)
+    name = []
+    display_name = []
+    for d in jira_resp:
+        name.append(d['name'])
+        display_name.append(d['displayName'])
+
+    return name, display_name
+
+
+# Legacy APIs
 @require_http_methods(['GET'])
 def get_issues_individual(request, team, student):
+    """ Return a HttpResponse, data contains count of all categories of issues (of an individual)"""
     try:
         jira = jira_login(request)
 
@@ -70,6 +100,7 @@ def get_issues_individual(request, team, student):
 
 @require_http_methods(['GET'])
 def get_issues_team(request, team):
+    """ Return a HttpResponse, data contains count of all categories of issues (of a team)"""
     try:
         jira = jira_login(request)
 
@@ -98,6 +129,7 @@ def get_issues_team(request, team):
 
 @require_http_methods(['GET'])
 def get_comment_count_individual(request, team, student):
+    """ Return a HttpResponse, with username and comment fields"""
     try:
         jira = jira_login(request)
 
@@ -105,7 +137,6 @@ def get_comment_count_individual(request, team, student):
         count = issues.count(student)
         resp = init_http_response(
             RespCode.success.value.key, RespCode.success.value.msg)
-
         resp['username'] = student
         resp['comments'] = count / 16
         return HttpResponse(json.dumps(resp), content_type="application/json")
@@ -200,9 +231,10 @@ def get_issues_per_sprint(request, team):
         return HttpResponse(json.dumps(resp), content_type="application/json")
 
 
-# new
+# New APIs
 @require_http_methods(['GET'])
 def get_ticket_count_team_timestamped(request, team):
+    """ Return a HttpResponse, data contains 3 kinds of issues timestamped with unix time"""
     try:
         jira = jira_login(request)
 
@@ -224,9 +256,45 @@ def get_ticket_count_team_timestamped(request, team):
         return HttpResponse(json.dumps(resp), content_type="application/json")
 
 
-# not working
+@require_http_methods(['GET'])
+def get_contributions(request, team):
+    """ Return a HttpResponse, data contains display names and Done Counts
+    NOTE:
+    jira.get_all_assignable_users_for_project returns assignable users
+    jql assignee returns issues assigned to users
+
+    assignable users may have zero records, let alone DONE
+    whilst assignees may have been deactivated, thus not gettable with jira methods
+    """
+    try:
+        jira = jira_login(request)
+        students, names = get_member_names(get_project_key(team, jira), jira)
+        count = []
+        for student in students:
+            count.append(jira.jql('assignee = ' + student + ' AND project = '
+                                  + team + ' AND status = "Done"')['total'])
+        result = dict(zip(names, count))
+
+        data = []
+        for name, count in result.items():
+            data.append({
+                'student': name,
+                'done_count': count
+            })
+
+        resp = init_http_response(
+            RespCode.success.value.key, RespCode.success.value.msg)
+        resp['data'] = data
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+    except:
+        resp = {'code': -1, 'msg': 'error'}
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+
+
+# Legacy APIs, not working
 
 def jira_analytics(request, team):
+    """ Configures config.yml and executes it with jira-agile-metrics"""
     username, password = session_interpreter(request)
     with open('config.yaml', 'r') as file:
         data = file.read()
@@ -240,6 +308,7 @@ def jira_analytics(request, team):
 
 @require_http_methods(['GET'])
 def get_jira_cfd(request, team):
+    """ Return a HttpResponse, data contains a a png of Cumulative Flow Diagram"""
     jira_analytics(request, team)
     while not os.path.exists('TeamSPBackend/api/views/jira/cfd.png'):
         time.sleep(1)

@@ -74,6 +74,7 @@ urlpatterns = [
 
     # new
     path('jira/<team>/ticket_count', jira.get_ticket_count_team_timestamped),
+    path('jira/<team>/contributions', jira.get_contributions),
 
     # legacy but not working
     path('jira/<team>/jira_cfd', jira.get_jira_cfd),

@@ -46,9 +46,14 @@ class JiraTestCases(TestCase):
         response = self.client.get('/api/v11/jira/' + team + '/sprint_dates')
         self.assertEqual(response.json()["code"], RespCode.success.value.key, "response is not success")
 
-    def test_get_ticket_count_team_timestamped(self):
+    def test_get_ticket_count_team_timestamped_success(self):
         team = "swen90013-2020-sp"
         response = self.client.get('/api/v11/jira/' + team + '/ticket_count')
+        self.assertEqual(response.json()["code"], RespCode.success.value.key, "response is not success")
+
+    def test_get_contributions_success(self):
+        team = "swen90013-2020-sp"
+        response = self.client.get('/api/v11/jira/' + team + '/contributions')
         self.assertEqual(response.json()["code"], RespCode.success.value.key, "response is not success")
 
     """
