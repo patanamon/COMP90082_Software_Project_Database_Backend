@@ -5,9 +5,9 @@ from django.db import models
 
 
 class StudentCommitCounts(models.Model):
-    student_id = models.CharField(max_length=256, null=False)
-    relation_idn = models.CharField(max_length=256, null=False)
-    commit_count = models.CharField(max_length=256, null=False)
+    student_name = models.CharField(max_length=256, null=False)
+    relation_id = models.CharField(max_length=256, null=False)
+    commit_counts = models.CharField(max_length=256, null=False)
     space_key = models.CharField(max_length=256, null=False)
 
     class Meta:

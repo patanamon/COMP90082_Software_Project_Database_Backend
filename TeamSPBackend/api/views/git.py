@@ -31,12 +31,21 @@ def get_git_individual_commits(request, body, *args, **kwargs):
     CommitCount = defaultdict(lambda: 0)
     for commit in commits:
         CommitCount[commit['author']] += 1
-    student = [i for i in CommitCount.values()]
-    commit_count = [i for i in CommitCount.keys()]
-    data = {
-        "student": student,
-        "commit_count": commit_count
-    }
+    commit_count = [i for i in CommitCount.values()]
+    student = [i for i in CommitCount.keys()]
+    data=[]
+    # data = {
+    #     "student": student,
+    #     "commit_count": commit_count
+    # }
+    for key,value in CommitCount.items():
+        temp={
+            "student":key,
+            "commit_count":value
+        }
+        data.append(temp)
+
+
 
     resp = init_http_response_my_enum(RespCode.success, data)
     return make_json_response(resp=resp)
@@ -76,6 +85,7 @@ def get_git_commits(request, body, *args, **kwargs):
         deletion=deletion,
         commits=commits,
     )
+  #  print(data)
     resp = init_http_response_my_enum(RespCode.success, data)
     return make_json_response(resp=resp)
 
