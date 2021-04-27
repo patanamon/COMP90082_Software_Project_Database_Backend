@@ -1,5 +1,5 @@
 from django.test import TestCase
-from TeamSPBackend.git.models import StudentCommitCounts
+from TeamSPBackend.git.models import StudentCommitCounts, GitCommitCounts
 from TeamSPBackend.test.utils import object_creation_helpers, login_helpers
 
 class GetGitCommitsTestCase(TestCase):

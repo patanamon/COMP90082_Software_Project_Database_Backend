@@ -2,6 +2,7 @@
 
 import base64
 from threading import Timer
+import datetime
 
 from functools import wraps
 from Crypto.Cipher import AES
@@ -140,6 +141,7 @@ def decrypt_aes(key):
     aes = AES.new(auto_fill(SALT), AES.MODE_ECB)
     return str(aes.decrypt(base64.decodebytes(key))).rstrip('\0')
 
+<<<<<<< HEAD
 
 def start_schedule(func, interval, *args):
     """
@@ -151,3 +153,10 @@ def start_schedule(func, interval, *args):
     """
     Timer(0, func, args).start()
     Timer(interval, start_schedule, args=[func, interval, *args]).start()
+=======
+def transformTimestamp(timestamp):
+    y = time.localtime(timestamp).tm_year
+    m = time.localtime(timestamp).tm_mon
+    d = time.localtime(timestamp).tm_mday
+    return datetime.date(y, m, d)
+>>>>>>> zcj modify
