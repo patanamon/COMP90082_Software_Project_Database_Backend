@@ -15,8 +15,8 @@ import time
 from TeamSPBackend.common.choices import RespCode
 from TeamSPBackend.common.utils import init_http_response
 # import test table
-from TeamSPBackend.api.views.jira.models import TestJira
 
+from TeamSPBackend.api.views.jira.models import Urlconfig
 from TeamSPBackend.project.models import ProjectCoordinatorRelation
 
 # helper functions
@@ -121,7 +121,12 @@ def get_comment_count_individual(request, team, student):
 @require_http_methods(['GET'])
 def get_sprints_dates(request, team):
     try:
-        jira = jira_login(request)
+        jira = Jira(
+            url='https://jira.cis.unimelb.edu.au:8444',
+            username='',
+            password='',
+            verify_ssl=False
+        )
         resp = init_http_response(
             RespCode.success.value.key, RespCode.success.value.msg)
 
@@ -299,9 +304,19 @@ def setGithubJiraUrl(request,team):
         password='',
         verify_ssl=False
     )
+
+
+
     # team = 'swen90013-2020-sp'
-    jira_obj = ProjectCoordinatorRelation(coordinator_id='1',space_key=team,git_url="123.com",jira_project = "234.com")
+    jira_obj = Urlconfig(space_key=team,git_url="123.com",jira_url = "234.com")
     jira_obj.save()
-    a = 'success'
-    return HttpResponse(json.dumps(a), content_type="application/json")
+
+    data = {'space_key':team,
+            'git_url':'test',
+            'gira_url':'test'
+            }
+    resp = init_http_response(
+        RespCode.success.value.key, RespCode.success.value.msg)
+    resp['data'] = data
+    return HttpResponse(json.dumps(resp), content_type="application/json")
 
