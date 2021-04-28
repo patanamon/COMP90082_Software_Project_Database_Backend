@@ -2,7 +2,7 @@ from django.db import models
 # Create your models here.
 
 
-class Jira(models.Model):
+class TestJira(models.Model):
     id = models.AutoField(primary_key=True)
     code = models.IntegerField()
     message = models.CharField(max_length=50)

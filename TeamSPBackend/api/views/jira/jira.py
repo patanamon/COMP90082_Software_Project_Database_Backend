@@ -2,6 +2,7 @@ from atlassian import Jira
 import json
 import time
 
+
 from django.views.decorators.http import require_http_methods
 from django.http.response import HttpResponse
 
@@ -13,7 +14,10 @@ import time
 
 from TeamSPBackend.common.choices import RespCode
 from TeamSPBackend.common.utils import init_http_response
+# import test table
+from TeamSPBackend.api.views.jira.models import TestJira
 
+from TeamSPBackend.project.models import ProjectCoordinatorRelation
 
 # helper functions
 def session_interpreter(request):
@@ -285,4 +289,19 @@ def hey(request):
         RespCode.success.value.key, RespCode.success.value.msg)
     resp['data'] = data
     return HttpResponse(json.dumps(resp), content_type="application/json")
+
+
+@require_http_methods(['POST'])
+def setGithubJiraUrl(request,team):
+    jira = Jira(
+        url='https://jira.cis.unimelb.edu.au:8444',
+        username='xiefx',
+        password='Qq970128!',
+        verify_ssl=False
+    )
+    # team = 'swen90013-2020-sp'
+    jira_obj = ProjectCoordinatorRelation(coordinator_id='1',space_key=team,git_url="123.com",jira_project = "234.com")
+    jira_obj.save()
+    a = 'success'
+    return HttpResponse(json.dumps(a), content_type="application/json")
 
