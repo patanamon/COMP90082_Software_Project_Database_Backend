@@ -142,5 +142,12 @@ def decrypt_aes(key):
 
 
 def start_schedule(func, interval, *args):
-    func(*args)
-    Timer(interval, start_schedule, args=(func, interval, *args)).start()
+    """
+    Run function regularly at the given interval.
+    For example, start_schedule(print, 3, "hello world") will print "hello world" every 3 seconds
+    :param func: the function/method need to be run on a regular basis
+    :param interval: the time interval to run function, in seconds
+    :param args: arguments of this function, is optional if no argument is needed.
+    """
+    Timer(0, func, args).start()
+    Timer(interval, start_schedule, args=[func, interval, *args]).start()
