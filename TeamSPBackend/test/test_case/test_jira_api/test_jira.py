@@ -19,18 +19,21 @@ class JiraTestCases(TestCase):
     def test_get_individual_issue_success(self):
         team = "swen90013-2020-sp"
         student = "xinbos"
-        response = self.client.get('/api/v11/jira/' + team + '/tickets/' + student)
+        response = self.client.get('/api/v1/jira/' + team + '/tickets/' + student)
+        #print(response.json()["data"])
         self.assertEqual(response.json()["code"], RespCode.success.value.key, "response is not success")
 
     def test_get_team_issue_success(self):
         team = "swen90013-2020-sp"
-        response = self.client.get('/api/v11/jira/' + team + '/tickets')
+        response = self.client.get('/api/v1/jira/' + team + '/tickets')
+        #print(response.json()["data"])
         self.assertEqual(response.json()["code"], RespCode.success.value.key, "response is not success")
 
     def test_get_individual_comment_count_success(self):
         team = "swen90013-2020-sp"
         student = "xinbos"
-        response = self.client.get('/api/v11/jira/' + team + '/comments/' + student)
+        response = self.client.get('/api/v1/jira/' + team + '/comments/' + student)
+        #print(response.json()["data"])
         self.assertEqual(response.json()["code"], RespCode.success.value.key, "response is not success")
 
     def test_get_sprint_dates_success(self):
@@ -38,22 +41,26 @@ class JiraTestCases(TestCase):
         Tests the issue per student query success
         """
         team = "swen90013-2020-sp"
-        response = self.client.get('/api/v11/jira/' + team + '/issues_per_sprint')
+        response = self.client.get('/api/v1/jira/' + team + '/issues_per_sprint')
+        #print(response.json()["data"])
         self.assertEqual(response.json()["code"], RespCode.success.value.key, "response is not success")
 
     def test_get_issues_per_sprint_success(self):
         team = "swen90013-2020-sp"
-        response = self.client.get('/api/v11/jira/' + team + '/sprint_dates')
+        response = self.client.get('/api/v1/jira/' + team + '/sprint_dates')
+        #print(response.json()["data"])
         self.assertEqual(response.json()["code"], RespCode.success.value.key, "response is not success")
 
     def test_get_ticket_count_team_timestamped_success(self):
         team = "swen90013-2020-sp"
-        response = self.client.get('/api/v11/jira/' + team + '/ticket_count')
+        response = self.client.get('/api/v1/jira/' + team + '/ticket_count')
+        #print(response.json()["data"])
         self.assertEqual(response.json()["code"], RespCode.success.value.key, "response is not success")
 
     def test_get_contributions_success(self):
         team = "swen90013-2020-sp"
-        response = self.client.get('/api/v11/jira/' + team + '/contributions')
+        response = self.client.get('/api/v1/jira/' + team + '/contributions')
+        #print(response.json()["data"])
         self.assertEqual(response.json()["code"], RespCode.success.value.key, "response is not success")
 
     """
