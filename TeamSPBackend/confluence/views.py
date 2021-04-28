@@ -11,35 +11,6 @@ from TeamSPBackend.common import utils
 # Create your views here.
 
 
-def get_meeting_minutes(request, space_key):
-    """
-        return all the meeting minutes titles and links from the specific confluence space
-        step1: get the space_key
-        step2: find all the minutes which have the same space key
-        step3: return the titles and links
-    """
-    # user = request.session.get('user')
-    # username = user['atl_username']
-    # password = user['atl_password']
-    key = space_key
-    try:
-        # find all the meeting minutes which have the specific space key
-        meeting_minutes = MeetingMinutes.objects.filter(space_key=key)
-        data = []
-        for meeting in meeting_minutes:
-            data.append({
-                'title': meeting.meeting_title,
-                'link': meeting.meeting_link
-            })
-        resp = init_http_response(
-            RespCode.success.value.key, RespCode.success.value.msg)
-        resp['data'] = data
-        return HttpResponse(json.dumps(resp), content_type="application/json")
-    except:
-        resp = {'code': -1, 'msg': 'error'}
-        return HttpResponse(json.dumps(resp), content_type="application/json")
-
-
 def update_meeting_minutes():
     """
     update the meeting_minutes table in DB regularly
