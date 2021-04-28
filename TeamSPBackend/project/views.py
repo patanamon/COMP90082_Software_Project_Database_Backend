@@ -11,9 +11,11 @@ from TeamSPBackend.common.utils import make_json_response, init_http_response, c
 from TeamSPBackend.api.dto.dto import ProjectDTO
 from TeamSPBackend.project.views import import_projects_into_coordinator
 
-def import_projects_into_coordinator(coordinator, project_list):
-    try:
 
-    except:
-        resp = {'code': -1, 'msg': 'error'}
-        return HttpResponse(json.dumps(resp), content_type="application/json")
+def import_projects_into_coordinator(coordinator, project_list):
+    print()
+# try:
+
+# except:
+#     resp = {'code': -1, 'msg': 'error'}
+#     return HttpResponse(json.dumps(resp), content_type="application/json")
