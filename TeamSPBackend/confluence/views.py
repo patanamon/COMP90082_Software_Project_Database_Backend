@@ -23,9 +23,11 @@ def update_page_history():
         delta_page_count = {}
         days = []
         for result in results:
-            # "2021-02-26T10:34:27.631+11:00"
+            # example: "2021-02-26T10:34:27.631+11:00"
             time_str = result["history"]["createdDate"]
+            # from timestamp: take date, ignore time, while keep the time zone
             time_str = time_str[:11]+"00:00:00.001"+time_str[-6:]
+            # convert timestamp string to unix timestamp
             page_create_time = int(time.mktime(datetime.fromisoformat(time_str).timetuple()))
             if page_create_time in delta_page_count:
                 delta_page_count[page_create_time] += 1
