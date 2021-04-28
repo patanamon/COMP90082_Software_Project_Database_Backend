@@ -189,3 +189,9 @@ class GitDTO(object):
         if not self.after:
             return None
         return self.after // 1000
+
+
+class ProjectDTO(object):
+    def __init__(self):
+        self.coordinator = None
+        self.project_list = None
