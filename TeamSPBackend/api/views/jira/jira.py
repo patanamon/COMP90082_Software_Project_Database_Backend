@@ -31,8 +31,8 @@ def jira_login(request):
     username, password = session_interpreter(request)
     jira = Jira(
         url='https://jira.cis.unimelb.edu.au:8444',
-        username='xiefx',
-        password='Qq970128!',
+        username='',
+        password='',
         verify_ssl=False
     )
     return jira
@@ -211,8 +211,8 @@ def get_ticket_count_team_timestamped(request, team):
         # jira = jira_login(request)
         jira = Jira(
             url='https://jira.cis.unimelb.edu.au:8444',
-            username='xiefx',
-            password='Qq970128!',
+            username='',
+            password='',
             verify_ssl=False
         )
 
@@ -266,8 +266,8 @@ def hey(request):
     # username, password = session_interpreter(request)
     jira = Jira(
         url='https://jira.cis.unimelb.edu.au:8444',
-        username='xiefx',
-        password='Qq970128!',
+        username='',
+        password='',
         verify_ssl=False
     )
     team = 'swen90013-2020-sp'
@@ -295,8 +295,8 @@ def hey(request):
 def setGithubJiraUrl(request,team):
     jira = Jira(
         url='https://jira.cis.unimelb.edu.au:8444',
-        username='xiefx',
-        password='Qq970128!',
+        username='',
+        password='',
         verify_ssl=False
     )
     # team = 'swen90013-2020-sp'
