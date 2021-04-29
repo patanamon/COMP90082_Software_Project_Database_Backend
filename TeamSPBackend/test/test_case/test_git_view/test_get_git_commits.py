@@ -18,16 +18,15 @@ class GetGitCommitsTestCase(TestCase):
         """
 
         url = "/api/v1/git/individual_commits"
-        data = {
-            "url": "https://github.com/LikwunCheung/TeamSPBackend",
-            #"author": "Procyon1996"
-        }
-        tag_1 = 0
-        tag_2 = 1
-        response = self.client.post(url, data=data, content_type="application/json")
-        all_entries =StudentCommitCounts.objects.all()
-        for item in all_entries:
-            print(str(item.student_name)+" : "+str(item.commit_counts))
+        # data = {
+        #     #"url": "https://github.com/LikwunCheung/TeamSPBackend",
+        #     #"author": "Procyon1996"
+        # }
+        #
+        # response = self.client.post(url, data=data, content_type="application/json")
+        # all_entries =StudentCommitCounts.objects.all()
+        # for item in all_entries:
+        #     print(str(item.student_name)+" : "+str(item.commit_counts))
         # for commit in response.json()["data"]['commits']:
         #     if commit['author'] != 'Procyon1996':
         #         tag_1 = 1
