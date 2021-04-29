@@ -156,5 +156,9 @@ def transformTimestamp(timestamp):
     y = time.localtime(timestamp).tm_year
     m = time.localtime(timestamp).tm_mon
     d = time.localtime(timestamp).tm_mday
-    return datetime.date(y, m, d)
+    s = str(datetime.date(y, m, d))
+    timeArray = time.strptime(s, "%Y-%m-%d")
+    timeStamp = int(time.mktime(timeArray))
+    # Unified the date to zero o'clock of the day
+    return timeStamp
 

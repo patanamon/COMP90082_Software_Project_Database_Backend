@@ -48,7 +48,7 @@ urlpatterns = [
     path('team/<space_key>', confluence.get_user_list),
 
     # Git Related API
-    path('git/commit', get_git_commits),
+    path('git/commit/<space_key>', get_git_commits),
     path('git/individual_commits/<space_key>', get_git_individual_commits),
     path('git/pullrequest', get_git_pr),
 

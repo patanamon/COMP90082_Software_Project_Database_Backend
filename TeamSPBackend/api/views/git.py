@@ -7,9 +7,10 @@ from django.views.decorators.http import require_http_methods
 from TeamSPBackend.common.github_util import get_commits, get_pull_request
 from TeamSPBackend.api.dto.dto import GitDTO
 from TeamSPBackend.common.choices import RespCode
-from TeamSPBackend.common.utils import make_json_response, check_user_login, body_extract, mills_timestamp, check_body, \
-    init_http_response_my_enum, transformTimestamp
+from TeamSPBackend.common.utils import make_json_response, body_extract, init_http_response_my_enum, transformTimestamp
 from TeamSPBackend.git.models import StudentCommitCounts, GitCommitCounts
+from TeamSPBackend.project.models import ProjectCoordinatorRelation
+
 
 logger = logging.getLogger('django')
 
@@ -31,52 +32,106 @@ def get_git_individual_commits(request, space_key):
     return make_json_response(resp=resp)
 
 
-@require_http_methods(['POST'])
-def get_git_commits(request, body, *args, **kwargs):
-    # body is a dict and use body_extract to construct git_dao which includes url, branch, author, before and after(time)
-    git_dto = GitDTO()
-    body_extract(body, git_dto)
+@require_http_methods(['GET'])
+def get_git_commits(request, space_key):
+    # Case 1: if git_commit table contains this space_key, get it directly from db
+    data = []
+    if GitCommitCounts.objects.filter(space_key=space_key).exists():
+        # print(GitCommitCounts.objects.get(space_key=space_key))
+        for i in GitCommitCounts.objects.filter(space_key=space_key):
+            tmp = {
+                "commit_count": str(i.commit_counts),
+                "date": str(i.query_date)
+            }
+            data.append(tmp)
+    else:
+        # Case 2: if git_commit table doesn't contain while relation table contains, get it from git web (the first crawler)
+        if ProjectCoordinatorRelation.objects.filter(space_key=space_key).exists():
+            relation_data = ProjectCoordinatorRelation.objects.filter(space_key=space_key)
+            commits = get_commits(relation_data[0].git_url, None, None, None, None)
+            delta_commit_count = {}  # To store every day commit count
+            days = []  # For loop
 
-    if not git_dto.valid_url:
-        resp = init_http_response_my_enum(RespCode.invalid_parameter)
-        return make_json_response(resp=resp)
-    git_dto.url = git_dto.url.lstrip('$')
+            for i in commits:
+                ts = transformTimestamp(i['date'])
+                if ts in delta_commit_count:
+                    delta_commit_count[ts] += 1
+                else:
+                    delta_commit_count[ts] = 1
+                    days.append(ts)
 
-    before = transformTimestamp(git_dto.second_before)
-    after = transformTimestamp(git_dto.second_after)
+            for day in days:
+                count = 0
+                for k, v in delta_commit_count.items():
+                    if k <= day:
+                        count += v
+                # data which are returned to front end
+                tmp = {
+                    "commit_count": str(count),
+                    "date": str(day)
+                }
+                data.append(tmp)
+                # store data into db by date
+                git_data = GitCommitCounts(
+                    space_key=space_key,
+                    commit_counts=count,
+                    query_date=day
+                )
+                git_data.save()
 
-    if GitCommitCounts.objects.filter(space_key=git_dto.url, query_date=before).exists() \
-            and GitCommitCounts.objects.filter(space_key=git_dto.url, query_date=after).exists():
-        count_after = GitCommitCounts.objects.get(space_key=git_dto.url, query_date=after).commit_counts
-        count_before = GitCommitCounts.objects.get(space_key=git_dto.url, query_date=before).commit_counts
-        # res = {'space_key': git_dto.url, 'commit_count': count_after - count_before, 'date_from':before, 'date_to': after}
-        data = dict(
-            space_key=git_dto.url,
-            commit_count=count_after - count_before,
-            date_from=before,
-            date_to=after
-        )
-        resp = init_http_response_my_enum(RespCode.success, data)
-        return make_json_response(resp=resp)
-
-    commits = get_commits(git_dto.url, git_dto.author, git_dto.branch, time.localtime(), 1)
-    total = len(commits)
-    relation_id = 1 # ⚠️
-    info = GitCommitCounts(relation_id=relation_id,
-                           space_key=git_dto.url,
-                           commit_counts=total,
-                           query_date=transformTimestamp(time.localtime()))
-    info.save()
-
-    data = dict(
-        space_key=git_dto.url,
-        commit_count=total,
-        date_from=before,
-        date_to=after
-    )
+        # Case 3: Neither contains, invalid space_key, return None
+        else:
+            resp = init_http_response_my_enum(RespCode.invalid_parameter)
+            return make_json_response(resp=resp)
 
     resp = init_http_response_my_enum(RespCode.success, data)
     return make_json_response(resp=resp)
+
+
+
+    # git_dto = GitDTO()
+    # body_extract(body, git_dto)
+    #
+    # if not git_dto.valid_url:
+    #     resp = init_http_response_my_enum(RespCode.invalid_parameter)
+    #     return make_json_response(resp=resp)
+    # git_dto.url = git_dto.url.lstrip('$')
+    #
+    # before = transformTimestamp(git_dto.second_before)
+    # after = transformTimestamp(git_dto.second_after)
+    #
+    # if GitCommitCounts.objects.filter(space_key=git_dto.url, query_date=before).exists() \
+    #         and GitCommitCounts.objects.filter(space_key=git_dto.url, query_date=after).exists():
+    #     count_after = GitCommitCounts.objects.get(space_key=git_dto.url, query_date=after).commit_counts
+    #     count_before = GitCommitCounts.objects.get(space_key=git_dto.url, query_date=before).commit_counts
+    #     # res = {'space_key': git_dto.url, 'commit_count': count_after - count_before, 'date_from':before, 'date_to': after}
+    #     data = dict(
+    #         space_key=git_dto.url,
+    #         commit_count=count_after - count_before,
+    #         date_from=before,
+    #         date_to=after
+    #     )
+    #     resp = init_http_response_my_enum(RespCode.success, data)
+    #     return make_json_response(resp=resp)
+    #
+    # commits = get_commits(git_dto.url, git_dto.author, git_dto.branch, time.localtime(), 1)
+    # total = len(commits)
+    # relation_id = 1 # ⚠️
+    # info = GitCommitCounts(relation_id=relation_id,
+    #                        space_key=git_dto.url,
+    #                        commit_counts=total,
+    #                        query_date=transformTimestamp(time.localtime()))
+    # info.save()
+    #
+    # data = dict(
+    #     space_key=git_dto.url,
+    #     commit_count=total,
+    #     date_from=before,
+    #     date_to=after
+    # )
+    #
+    # resp = init_http_response_my_enum(RespCode.success, data)
+    # return make_json_response(resp=resp)
 
 
 # pull request
