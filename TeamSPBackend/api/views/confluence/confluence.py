@@ -7,6 +7,7 @@ from TeamSPBackend.common.choices import RespCode
 from django.views.decorators.http import require_http_methods
 from django.http.response import HttpResponse, HttpResponseRedirect, HttpResponseNotAllowed, HttpResponseBadRequest
 from TeamSPBackend.common.utils import make_json_response, init_http_response, check_user_login, check_body, body_extract, mills_timestamp
+from TeamSPBackend.confluence.models import PageHistory
 
 
 @require_http_methods(['GET'])
@@ -304,6 +305,30 @@ def get_spaces_by_key(request, key_word):
         resp = init_http_response(
             RespCode.success.value.key, RespCode.success.value.msg)
         resp['data'] = space_keys
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+    except:
+        resp = {'code': -1, 'msg': 'error'}
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+
+
+@require_http_methods(['GET'])
+def get_page_count_by_time(request, space_key):
+    """Get a list of time, page count pairs.
+    From this space is created, to the date this method is called, one a daily basis.
+    Method: GET
+    Request: space_key
+    """
+    try:
+        data = []
+        for page_history in PageHistory.objects.filter(space_key=space_key):
+            history = {
+                "time": page_history.date,
+                "page_count": page_history.page_count
+            }
+            data.append(history)
+        resp = init_http_response(
+            RespCode.success.value.key, RespCode.success.value.msg)
+        resp['data'] = data
         return HttpResponse(json.dumps(resp), content_type="application/json")
     except:
         resp = {'code': -1, 'msg': 'error'}
