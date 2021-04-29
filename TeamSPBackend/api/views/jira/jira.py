@@ -305,18 +305,18 @@ def setGithubJiraUrl(request,team):
         verify_ssl=False
     )
 
+    data = request.POST
+    git_url = data['git_url']
+    jira_url = data['jira_url']
 
 
     # team = 'swen90013-2020-sp'
-    jira_obj = Urlconfig(space_key=team,git_url="123.com",jira_url = "234.com")
+    jira_obj = Urlconfig(space_key=team,git_url=git_url,jira_url = jira_url)
     jira_obj.save()
 
-    data = {'space_key':team,
-            'git_url':'test',
-            'gira_url':'test'
-            }
+
     resp = init_http_response(
-        RespCode.success.value.key, RespCode.success.value.msg)
-    resp['data'] = data
+         RespCode.success.value.key, RespCode.success.value.msg)
+    # resp['data'] = data
     return HttpResponse(json.dumps(resp), content_type="application/json")
 
