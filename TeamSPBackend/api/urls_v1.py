@@ -64,6 +64,7 @@ urlpatterns = [
          confluence.get_subject_supervisors),
     # COMP90082 21 S1 sprint1
     path('confluence/spaces/<key_word>', confluence.get_spaces_by_key),
+    path('confluence/<space_key>/meeting_minutes', confluence.get_meeting_minutes),
     path('confluence/spaces/<space_key>/page_count', confluence.get_page_count_by_time),
 
     # Jira Related API
