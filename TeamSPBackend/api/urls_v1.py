@@ -49,7 +49,7 @@ urlpatterns = [
 
     # Git Related API
     path('git/commit', get_git_commits),
-    path('git/individual_commits', get_git_individual_commits),
+    path('git/individual_commits/<space_key>', get_git_individual_commits),
     path('git/pullrequest', get_git_pr),
 
     # Confluence Related API
