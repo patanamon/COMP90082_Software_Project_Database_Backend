@@ -32,6 +32,7 @@ def update_user_list():
                         user_set.add(user)
                     if group is not None and group not in group_set:
                         group_set.add(group)
+                        # TODO: while there is more to get...
                         members = conf.get_group_members(group)
                         for member in members:
                             if member["username"] not in user_set:
