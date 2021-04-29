@@ -338,7 +338,7 @@ def get_meeting_minutes(request, space_key):
         RespCode.success.value.key, RespCode.success.value.msg)
         resp['data'] = data
         return HttpResponse(json.dumps(resp), content_type="application/json")  
-     except:
+    except:
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
 
