@@ -88,52 +88,6 @@ def get_git_commits(request, space_key):
     return make_json_response(resp=resp)
 
 
-
-    # git_dto = GitDTO()
-    # body_extract(body, git_dto)
-    #
-    # if not git_dto.valid_url:
-    #     resp = init_http_response_my_enum(RespCode.invalid_parameter)
-    #     return make_json_response(resp=resp)
-    # git_dto.url = git_dto.url.lstrip('$')
-    #
-    # before = transformTimestamp(git_dto.second_before)
-    # after = transformTimestamp(git_dto.second_after)
-    #
-    # if GitCommitCounts.objects.filter(space_key=git_dto.url, query_date=before).exists() \
-    #         and GitCommitCounts.objects.filter(space_key=git_dto.url, query_date=after).exists():
-    #     count_after = GitCommitCounts.objects.get(space_key=git_dto.url, query_date=after).commit_counts
-    #     count_before = GitCommitCounts.objects.get(space_key=git_dto.url, query_date=before).commit_counts
-    #     # res = {'space_key': git_dto.url, 'commit_count': count_after - count_before, 'date_from':before, 'date_to': after}
-    #     data = dict(
-    #         space_key=git_dto.url,
-    #         commit_count=count_after - count_before,
-    #         date_from=before,
-    #         date_to=after
-    #     )
-    #     resp = init_http_response_my_enum(RespCode.success, data)
-    #     return make_json_response(resp=resp)
-    #
-    # commits = get_commits(git_dto.url, git_dto.author, git_dto.branch, time.localtime(), 1)
-    # total = len(commits)
-    # relation_id = 1 # ⚠️
-    # info = GitCommitCounts(relation_id=relation_id,
-    #                        space_key=git_dto.url,
-    #                        commit_counts=total,
-    #                        query_date=transformTimestamp(time.localtime()))
-    # info.save()
-    #
-    # data = dict(
-    #     space_key=git_dto.url,
-    #     commit_count=total,
-    #     date_from=before,
-    #     date_to=after
-    # )
-    #
-    # resp = init_http_response_my_enum(RespCode.success, data)
-    # return make_json_response(resp=resp)
-
-
 # pull request
 @require_http_methods(['POST'])
 def get_git_pr(request, body, *args, **kwargs):
