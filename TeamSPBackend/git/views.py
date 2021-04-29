@@ -12,7 +12,6 @@ from TeamSPBackend.project.models import ProjectCoordinatorRelation
 
 def update_individual_commits():
 
-
     for relation in ProjectCoordinatorRelation.objects.all():
         data = {
             "url": relation.git_url
@@ -40,5 +39,4 @@ def update_individual_commits():
             else:
                 user = StudentCommitCounts(student_name=key, commit_counts=value,space_key=relation.space_key)
                 user.save()
-
 

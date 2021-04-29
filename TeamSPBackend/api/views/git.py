@@ -14,18 +14,18 @@ from TeamSPBackend.git.models import StudentCommitCounts, GitCommitCounts
 logger = logging.getLogger('django')
 
 
-@require_http_methods(['POST'])
-def get_git_individual_commits(request, body, *args, **kwargs):
+@require_http_methods(['GET'])
+def get_git_individual_commits(request, space_key):
 
-    all_entries = StudentCommitCounts.objects.all()
-    data = []
-    for item in all_entries:
-        if all_entries.space_key == body:
-            temp = {
-                "student": str(item.student_name),
-                "commit_count": str(item.commit_counts)
-            }
-            data.append(temp)
+    data=[]
+
+    for item in StudentCommitCounts.objects.filter(space_key=space_key):
+
+        temp = {
+            "student": str(item.student_name),
+            "commit_count": str(item.commit_counts)
+        }
+        data.append(temp)
 
     resp = init_http_response_my_enum(RespCode.success, data)
     return make_json_response(resp=resp)
