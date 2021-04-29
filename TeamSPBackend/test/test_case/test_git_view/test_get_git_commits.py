@@ -11,25 +11,6 @@ class GetGitCommitsTestCase(TestCase):
         # login first
         login_helpers.login(self.client)
 
-    def test_get_total_commits(self):
-        """
-                Test the function for the API: POST /api/v1/git/commit
-                Search for total contribution
-                """
-        url = "/api/v1/git/commit"
-        data = {
-            "url": "https://github.com/LikwunCheung/TeamSPBackend",
-            # "author": "Procyon"
-        }
-        # get_git_commits(data=data)
-        response = self.client.post(url, data=data, content_type="application/json")
-        self.assertNotEqual(response.json()["data"], None)
-        # self.assertEqual(response.status_code, 200, "response code is not 200")
-        # print(response.json())
-
-        # d = get_git_commits(request = data)
-        # self.assertEqual(d.status_code, 200)
-
     def test_get_individual_commits(self):
         """
         Test the function for the API: POST /api/v1/git/commit
@@ -71,7 +52,32 @@ class GetGitCommitsTestCase(TestCase):
                 flag = False
         self.assertEqual(flag, True)
         # print("test_git_date:")
-        # print(response)
+        dic = dict(
+            total=response.json()["data"]['total'],
+            relation_id=response.json()["data"]['relation_id'],
+            date=response.json()["data"]['date'],
+            url=response.json()["data"]['space_key']
+        )
+        print(dic)
+
+    def test_get_total_commits(self):
+        """
+                Test the function for the API: POST /api/v1/git/commit
+                Search for total contribution
+                """
+        url = "/api/v1/git/commit"
+        data = {
+            "url": "https://github.com/LikwunCheung/TeamSPBackend",
+            # "author": "Procyon"
+        }
+        # get_git_commits(data=data)
+        response = self.client.post(url, data=data, content_type="application/json")
+        self.assertNotEqual(response.json()["data"], None)
+        # self.assertEqual(response.status_code, 200, "response code is not 200")
+        # print(response.json())
+
+        # d = get_git_commits(request = data)
+        # self.assertEqual(d.status_code, 200)
 
     def test_git_pr(self):
         url = "/api/v1/git/pullrequest"
@@ -79,8 +85,8 @@ class GetGitCommitsTestCase(TestCase):
             "url": "https://github.com/LikwunCheung/TeamSPBackend"
         }
         response = self.client.post(url, data=data, content_type="application/json")
-        print("pull request json file:")
-        print(response.json())
+        # print("pull request json file:")
+        # print(response.json())
 
 
 if __name__ == '__main__':

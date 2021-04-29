@@ -12,8 +12,6 @@ from TeamSPBackend.git.models import StudentCommitCounts, GitCommitCounts
 logger = logging.getLogger('django')
 
 @require_http_methods(['POST'])
-@check_user_login()
-@check_body
 def get_git_individual_commits(request, body, *args, **kwargs):
     # create GitDTO object
     git_dto = GitDTO()
@@ -57,9 +55,8 @@ def get_git_individual_commits(request, body, *args, **kwargs):
     resp = init_http_response_my_enum(RespCode.success, data)
     return make_json_response(resp=resp)
 
+
 @require_http_methods(['POST'])
-@check_user_login()
-@check_body
 def get_git_commits(request, body, *args, **kwargs):
     # body is a dict and use body_extract to construct git_dao which includes url, branch, author, before and after(time)
     git_dto = GitDTO()
@@ -90,7 +87,7 @@ def get_git_commits(request, body, *args, **kwargs):
 
     commits = get_commits(git_dto.url, git_dto.author, git_dto.branch, time.localtime(), 1)
     total = len(commits)
-    relation_id = 1
+    relation_id = 1 # ⚠️
     info = GitCommitCounts(relation_id=relation_id,
                            space_key=git_dto.url,
                            commit_counts=total,
@@ -109,8 +106,6 @@ def get_git_commits(request, body, *args, **kwargs):
 
 # pull request
 @require_http_methods(['POST'])
-@check_user_login()
-@check_body
 def get_git_pr(request, body, *args, **kwargs):
     git_dto = GitDTO()
     body_extract(body, git_dto)

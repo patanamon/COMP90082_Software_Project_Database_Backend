@@ -43,9 +43,13 @@ INSTALLED_APPS = [
     'TeamSPBackend.git',
     'TeamSPBackend.api',
     'TeamSPBackend.slack_',
+<<<<<<< HEAD
     'TeamSPBackend.confluence',
     'TeamSPBackend.project',
     'TeamSPBackend.coordinator'
+=======
+    'TeamSPBackend.project',
+>>>>>>> zcj modify
 ]
 
 MIDDLEWARE = [
