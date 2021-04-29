@@ -318,8 +318,6 @@ def get_page_count_by_time(request, space_key):
     Method: GET
     Request: space_key
     """
-    username = ""
-    password = ""
     try:
         data = []
         for page_history in PageHistory.objects.filter(space_key=space_key):
