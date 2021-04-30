@@ -25,4 +25,17 @@ class Migration(migrations.Migration):
                 'db_table': 'user_list',
             },
         ),
+
+        migrations.CreateModel(
+            name='PageHistory',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('page_count', models.IntegerField()),
+                ('date', models.IntegerField()),
+                ('space_key', models.CharField(max_length=256)),
+            ],
+            options={
+                'db_table': 'page_history',
+            },
+        ),
     ]

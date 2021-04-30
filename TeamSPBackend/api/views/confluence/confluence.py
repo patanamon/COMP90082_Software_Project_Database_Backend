@@ -9,6 +9,8 @@ from django.http.response import HttpResponse, HttpResponseRedirect, HttpRespons
 from TeamSPBackend.common.utils import make_json_response, init_http_response, check_user_login, check_body, \
     body_extract, mills_timestamp
 from TeamSPBackend.confluence.models import UserList
+from TeamSPBackend.confluence.models import MeetingMinutes
+from TeamSPBackend.confluence.models import PageHistory
 
 
 @require_http_methods(['GET'])
@@ -330,6 +332,61 @@ def get_user_list(request, space_key):
                 "picture": user_info.picture
             }
             data.append(user_detail)
+        resp = init_http_response(
+            RespCode.success.value.key, RespCode.success.value.msg)
+        resp['data'] = data
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+    except:
+        resp = {'code': -1, 'msg': 'error'}
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+
+      
+@require_http_methods(['GET'])
+def get_meeting_minutes(request, space_key):
+    """
+        return all the meeting minutes titles and links from the specific confluence space
+        step1: get the space_key
+        step2: find all the minutes which have the same space key
+        step3: return the titles and links
+    """
+    # user = request.session.get('user')
+    # username = user['atl_username']
+    # password = user['atl_password']
+    key = space_key
+    try:
+        # find all the meeting minutes which have the specific space key
+        meeting_minutes = MeetingMinutes.objects.filter(space_key=key)
+        data = []
+        for meeting in meeting_minutes:
+            data.append({
+                'title': meeting.meeting_title,
+                'link': meeting.meeting_link
+            })
+        resp = init_http_response(
+        RespCode.success.value.key, RespCode.success.value.msg)
+        resp['data'] = data
+        return HttpResponse(json.dumps(resp), content_type="application/json")  
+    except:
+        resp = {'code': -1, 'msg': 'error'}
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+
+      
+@require_http_methods(['GET'])
+def get_page_count_by_time(request, space_key):
+    """Get a list of time, page count pairs.
+    From this space is created, to the date this method is called, one a daily basis.
+    Method: GET
+    Request: space_key
+    """
+    try:
+        data = []
+        for page_history in PageHistory.objects.filter(space_key=space_key):
+            history = {
+                "time": page_history.date,
+                "page_count": page_history.page_count
+            }
+            data.append(history)
+
         resp = init_http_response(
             RespCode.success.value.key, RespCode.success.value.msg)
         resp['data'] = data

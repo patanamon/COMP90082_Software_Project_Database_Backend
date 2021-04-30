@@ -11,8 +11,11 @@ from .views.subject import subject_router, update_subject, delete_subject
 from .views.team import team_router, get_team_members, team_member_configure, team_configure
 from .views.slack import get_team_data, get_all_member_data, get_member_data
 from .views.git import get_git_commits, get_git_pr
+from TeamSPBackend.api.views.project.project import import_project_in_batch
 
 urlpatterns = [
+    # Project Related API
+    path('project/import',import_project_in_batch),
     # Invitation Related API
     path('invite', invitation_router),
     path('invite/accept', invite_accept),
@@ -62,6 +65,8 @@ urlpatterns = [
          confluence.get_subject_supervisors),
     # COMP90082 21 S1 sprint1
     path('confluence/spaces/<key_word>', confluence.get_spaces_by_key),
+    path('confluence/<space_key>/meeting_minutes', confluence.get_meeting_minutes),
+    path('confluence/spaces/<space_key>/page_count', confluence.get_page_count_by_time),
 
     # Jira Related API
     path('jira/<team>/jiracfd', helpJira.get_jira_CFD),
