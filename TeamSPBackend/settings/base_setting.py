@@ -43,10 +43,7 @@ INSTALLED_APPS = [
     'TeamSPBackend.api',
     'TeamSPBackend.slack_',
     'TeamSPBackend.confluence',
-    'TeamSPBackend.project',
-    'TeamSPBackend.coordinator',
 
-    # jira table for testing
     'TeamSPBackend.api.views.jira'
 ]
 

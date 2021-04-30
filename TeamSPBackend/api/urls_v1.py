@@ -4,7 +4,7 @@ from django.urls import path
 
 from TeamSPBackend.api.views.confluence import confluence
 from TeamSPBackend.api.views.confluence import page_contributions
-#from TeamSPBackend.api.views.jira import helpJira
+from TeamSPBackend.api.views.jira import jira
 from .views.invitation import invitation_router, invite_accept
 from .views.account import account_router, login, logout, update_account, delete, atl_login, supervisor_router
 from .views.subject import subject_router, update_subject, delete_subject
@@ -64,14 +64,22 @@ urlpatterns = [
 
 
     # Jira Related API
-    #path('jira/<team>/jiracfd', helpJira.get_jira_CFD),
+    # legacy
+    path('jira/<team>/tickets/<student>', jira.get_issues_individual),
+    path('jira/<team>/tickets', jira.get_issues_team),
+    path('jira/<team>/comments/<student>', jira.get_comment_count_individual),
+    path('jira/<team>/sprint_dates', jira.get_sprints_dates),
+    path('jira/<team>/issues_per_sprint', jira.get_issues_per_sprint),
+
+    # new
+    path('jira/<team>/ticket_count', jira.get_ticket_count_team_timestamped),
+    path('jira/<team>/contributions', jira.get_contributions),
+    path('jira/<team>/auto_ticket_count', jira.auto_get_ticket_count_team_timestamped),
+    path('jira/<team>/config', jira.setGithubJiraUrl),
+    # legacy but not working
+    #path('jira/<team>/jira_cfd', jira.get_jira_cfd),
     #path('jira/<team>/jiraburn', helpJira.get_jira_burn),
     #path('jira/<team>/jiraburnforecast', helpJira.get_jira_burn_forecast),
-    #path('jira/<team>/tickets/<student_id>', helpJira.get_issues_one_student),
-    #path('jira/<team>/tickets', helpJira.get_total_issues_team),
-    #path('jira/<team>/sprintdates', helpJira.get_sprints_dates),
-    #path('jira/<team>/issuespersprint', helpJira.get_issues_per_sprint),
-    #path('jira/<team>/comments/<student_id>', helpJira.get_comment_count_one_student),
 
     # Slack Related API
     # path('slack', slack_router),

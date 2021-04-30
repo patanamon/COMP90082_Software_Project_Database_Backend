@@ -4,5 +4,5 @@ from django.urls import path, include
 
 urlpatterns = [
     path('v1/', include('TeamSPBackend.api.urls_v1')),
-    path('v11/', include('TeamSPBackend.api.urls_v11')),
+    # path('v11/', include('TeamSPBackend.api.urls_v11')),
 ]
