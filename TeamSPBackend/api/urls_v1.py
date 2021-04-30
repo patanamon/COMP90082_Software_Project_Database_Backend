@@ -40,10 +40,11 @@ urlpatterns = [
 
     # Team Related API
     path('team', team_router),
-    path('team/<int:id>', team_router),
+    # path('team/<int:id>', team_router),
     path('team/<int:id>/members', get_team_members),
     path('team/<int:team_id>/members/<int:team_member_id>', team_member_configure),
     path('team/<int:team_id>/configuration', team_configure),
+    path('team/<space_key>', confluence.get_user_list),
 
     # Git Related API
     path('git/commit', get_git_commits),

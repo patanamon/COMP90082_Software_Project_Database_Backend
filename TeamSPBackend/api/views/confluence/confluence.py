@@ -6,10 +6,11 @@ from requests.auth import HTTPBasicAuth
 from TeamSPBackend.common.choices import RespCode
 from django.views.decorators.http import require_http_methods
 from django.http.response import HttpResponse, HttpResponseRedirect, HttpResponseNotAllowed, HttpResponseBadRequest
-from TeamSPBackend.common.utils import make_json_response, init_http_response, check_user_login, check_body, body_extract, mills_timestamp
+from TeamSPBackend.common.utils import make_json_response, init_http_response, check_user_login, check_body, \
+    body_extract, mills_timestamp
+from TeamSPBackend.confluence.models import UserList
 from TeamSPBackend.confluence.models import MeetingMinutes
 from TeamSPBackend.confluence.models import PageHistory
-
 
 
 @require_http_methods(['GET'])
@@ -192,7 +193,6 @@ def get_user_details(request, member):
 
 @require_http_methods(['GET'])
 def get_subject_supervisors(request, subjectcode, year):
-
     user = request.session.get('user')
     username = user['atl_username']
     password = user['atl_password']
@@ -293,9 +293,12 @@ def get_spaces_by_key(request, key_word):
     Method: GET
     Request: key_word
     """
-    user = request.session.get('user')
-    username = user['atl_username']
-    password = user['atl_password']
+    # TODO: get confluence username and password
+    # user = request.session.get('user')
+    # username = user['atl_username']
+    # password = user['atl_password']
+    username = ""
+    password = ""
     try:
         confluence = log_into_confluence(username, password)
         spaces = confluence.get_all_spaces()
@@ -313,6 +316,31 @@ def get_spaces_by_key(request, key_word):
         return HttpResponse(json.dumps(resp), content_type="application/json")
 
 
+@require_http_methods(['GET'])
+def get_user_list(request, space_key):
+    """Get the user list in a Confluence space
+    Method: Get
+    Parameter: space_key
+    """
+    try:
+        data = []
+        for user_info in UserList.objects.filter(space_key=space_key):
+            user_detail = {
+                "name": user_info.user_name,
+                "id": user_info.user_id,
+                "email": user_info.email,
+                "picture": user_info.picture
+            }
+            data.append(user_detail)
+        resp = init_http_response(
+            RespCode.success.value.key, RespCode.success.value.msg)
+        resp['data'] = data
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+    except:
+        resp = {'code': -1, 'msg': 'error'}
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+
+      
 @require_http_methods(['GET'])
 def get_meeting_minutes(request, space_key):
     """
@@ -342,6 +370,8 @@ def get_meeting_minutes(request, space_key):
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
 
+      
+@require_http_methods(['GET'])
 def get_page_count_by_time(request, space_key):
     """Get a list of time, page count pairs.
     From this space is created, to the date this method is called, one a daily basis.
@@ -364,5 +394,3 @@ def get_page_count_by_time(request, space_key):
     except:
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
-
-
