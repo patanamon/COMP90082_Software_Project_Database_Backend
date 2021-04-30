@@ -63,6 +63,18 @@ def get_member_names(project_key, jira):
     return name, display_name
 
 
+def datetime_truncate(t):
+    """returns truncated datetime object that only contains date"""
+    t = t.replace(hour=0, minute=0, second=0, microsecond=0)
+    t = datetime.date(t.year, t.month, t.day)
+    return t
+
+
+def to_unix_time(day):
+    """returns unix timestamp from truncated datetime object """
+    return time.mktime(datetime.datetime.strptime(str(day), "%Y-%m-%d").timetuple())
+
+
 # Legacy APIs
 @require_http_methods(['GET'])
 def get_issues_individual(request, team, student):
@@ -234,19 +246,34 @@ def get_issues_per_sprint(request, team):
 # New APIs
 @require_http_methods(['GET'])
 def get_ticket_count_team_timestamped(request, team):
-    """ Return a HttpResponse, data contains 3 kinds of issues timestamped with unix time"""
+    """ Return a HttpResponse, data contains 3 kinds of issues timestamped with unix time of each day"""
     try:
         jira = jira_login(request)
+        jquery = jira.jql('project = ' + team + ' ORDER BY created ASC')['issues'][0]['fields']['created']
 
-        todo = jira.jql('project = ' + team + ' AND status = "To Do"')['total']
-        in_progress = jira.jql('project = ' + team + ' AND status = "In Progress"')['total']
-        done = jira.jql('project = ' + team + ' AND status = "Done"')['total']
-        data = {
-            'time': time.time(),
-            'to_do': todo,
-            'in_progress': in_progress,
-            'done': done,
-        }
+        # parses to datetime object
+        jquery = parser.parse(jquery)
+
+        d0 = datetime_truncate(jquery)
+        today = datetime.date.today()
+
+        delta = today - d0
+
+        date_list = [today - datetime.timedelta(days=x) for x in range(delta.days)]
+
+        data = []
+        for day in reversed(date_list):
+            todo = jira.jql('project = ' + team + ' AND status WAS "To Do" ON ' + str(day))['total']
+            in_progress = jira.jql('project = ' + team + ' AND status WAS "In Progress" ON ' + str(day))['total']
+            done = jira.jql('project = ' + team + ' AND status WAS "Done" ON ' + str(day))['total']
+            #print(day, todo, in_progress, done)
+            data.append({
+                'time': to_unix_time(day),
+                'to_do': todo,
+                'in_progress': in_progress,
+                'done': done
+            })
+
         resp = init_http_response(
             RespCode.success.value.key, RespCode.success.value.msg)
         resp['data'] = data
