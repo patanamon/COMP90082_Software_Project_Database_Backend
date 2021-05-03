@@ -5,22 +5,9 @@ import json
 import urllib3
 
 from ..api.views.confluence.confluence import log_into_confluence
-from ..common.choices import RespCode
-from ..common.utils import init_http_response
-from TeamSPBackend.common import utils
-from TeamSPBackend.coordinator.models import Coordinator
-from TeamSPBackend.project.models import ProjectCoordinatorRelation
 from TeamSPBackend.confluence.models import PageHistory
-from TeamSPBackend.common import utils
-from TeamSPBackend.api.views.confluence import confluence
 from datetime import datetime
 import time
-
-from TeamSPBackend.coordinator.models import Coordinator
-from TeamSPBackend.project.models import ProjectCoordinatorRelation
-from django.db import transaction
-# Create your views here.
-
 
 from TeamSPBackend.confluence.models import UserList
 from TeamSPBackend.common import utils
@@ -30,34 +17,52 @@ from TeamSPBackend.project.models import ProjectCoordinatorRelation
 from django.db import transaction
 
 
+def update_space_user_list(coordinator_id, space_key):
+    coordinator = Coordinator.objects.get(id=coordinator_id)
+    atl_username = coordinator.atl_username
+    atl_password = coordinator.atl_password
+    conf = confluence.log_into_confluence(atl_username, atl_password)
+    user_list = []
+    user_set = {atl_username, }
+    group_set = set()
+    GROUP_LIMIT = 51  # this is a limit of user lists, if there is more than 50 users in a space, it is likely to be
+    # a public space.
+    permissions = conf.get_space_permissions(space_key)
+    if permissions == {}:  # if there is no permission specified, it is open to all confluence users.
+        members = conf.get_group_members("confluence-users", limit=GROUP_LIMIT)
+        for member in members:
+            if member["username"] not in user_set:
+                user_set.add(member["username"])
+                user_list.append(get_user(member, space_key))
+    for permission in permissions:
+        for detail in permission["spacePermissions"]:
+            user = detail["userName"]
+            group = detail["groupName"]
+            if user is not None and user not in user_set:
+                user_info = conf.get_user_details_by_username(user)
+                user_list.append(get_user(user_info, space_key))
+                user_set.add(user)
+            if group is not None and group not in group_set:
+                group_set.add(group)
+                members = conf.get_group_members(group, limit=GROUP_LIMIT)
+                for member in members:
+                    if member["username"] not in user_set:
+                        user_set.add(member["username"])
+                        user_list.append(get_user(member, space_key))
+    return user_list
+
+
+def insert_space_user_list(coordinator_id, space_key):
+    user_list = update_space_user_list(coordinator_id, space_key)
+    UserList.objects.bulk_create(user_list)
+
+
 def update_user_list():
     user_list = []
-    for coordinator in Coordinator.objects.all():
-        atl_username = coordinator.atl_username
-        atl_password = coordinator.atl_password
-        for space in ProjectCoordinatorRelation.objects.filter(coordinator_id = coordinator.id):
-            space_key = space.space_key
-            # assume other than the students, the coordinator is the only one who can read/update this space.
-            conf = confluence.log_into_confluence(atl_username, atl_password)
-            user_set = {atl_username, }
-            group_set = set()
-            permissions = conf.get_space_permissions(space_key)
-            for permission in permissions:
-                for detail in permission["spacePermissions"]:
-                    user = detail["userName"]
-                    group = detail["groupName"]
-                    if user is not None and user not in user_set:
-                        user_info = conf.get_user_details_by_username(user)
-                        user_list.append(get_user(user_info, space_key))
-                        user_set.add(user)
-                    if group is not None and group not in group_set:
-                        group_set.add(group)
-                        # TODO: while there is more to get...
-                        members = conf.get_group_members(group)
-                        for member in members:
-                            if member["username"] not in user_set:
-                                user_set.add(member["username"])
-                                user_list.append(get_user(member, space_key))
+    for space in ProjectCoordinatorRelation.objects.all():
+        coordinator_id = space.coordinator_id
+        space_key = space.space_key
+        user_list.extend(update_space_user_list(coordinator_id, space_key))
 
     with transaction.atomic():
         UserList.objects.all().delete()
