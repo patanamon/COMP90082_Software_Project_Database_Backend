@@ -9,8 +9,7 @@ from django.db.models import Q, ObjectDoesNotExist
 from TeamSPBackend.api.dto.dto import AddTeamDTO, UpdateTeamDTO, TeamMemberDTO, TeamConfigurationDTO
 
 from TeamSPBackend.common.config import SINGLE_PAGE_LIMIT
-from TeamSPBackend.common.utils import check_user_login, make_json_response, init_http_response, check_body, \
-    body_extract, mills_timestamp, init_http_response_my_enum
+from TeamSPBackend.common.utils import check_user_login, make_json_response, init_http_response, check_body, body_extract, mills_timestamp, init_http_response_my_enum
 from TeamSPBackend.common.choices import RespCode, Roles, get_keys
 from TeamSPBackend.account.models import Account
 from TeamSPBackend.api.views.confluence.confluence import get_members
@@ -19,18 +18,6 @@ from TeamSPBackend.subject.models import Subject
 from TeamSPBackend.account.models import User
 
 logger = logging.getLogger('django')
-
-
-@require_http_methods(['POST'])
-def test_post(request, *args, **kwargs):
-    import json
-    body = request.body
-    print(json.loads(body))
-
-    resp = init_http_response(
-        RespCode.success.value.key, RespCode.success.value.msg)
-    import json
-    return HttpResponse(json.dumps(resp), content_type="application/json")
 
 
 @require_http_methods(['POST', 'GET'])
