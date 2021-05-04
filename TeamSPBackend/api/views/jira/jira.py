@@ -39,8 +39,8 @@ def jira_login(request):
     username, password = session_interpreter(request)
     jira = Jira(
         url='https://jira.cis.unimelb.edu.au:8444',
-        username='xiefx',
-        password='Qq970128@',
+        username=username,
+        password=password,
         verify_ssl=False
     )
     return jira
