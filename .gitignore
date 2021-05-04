@@ -1,4 +1,8 @@
 .idea
+<<<<<<< HEAD
 __pycache__/
 TeamSPBackend/settings/dev.py
 TeamSPBackend/settings/prod.py
+=======
+__pycache__
+>>>>>>> merge 20 commits into 1

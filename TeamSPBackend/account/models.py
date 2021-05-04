@@ -1,3 +1,8 @@
+<<<<<<< HEAD:TeamSPBackend/account/models.py
+=======
+from django.db import models
+
+>>>>>>> merge 20 commits into 1:src/account/models.py
 # Create your models here.
 from django.db import models
 

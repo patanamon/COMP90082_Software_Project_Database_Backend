@@ -94,21 +94,21 @@ def get_commits(repo, author=None, branch=None, after=None, before=None):
 
     commits = list()
     for i in range(0, len(lines), 6):
-        hash_code = lines[i].strip()
         author = lines[i + 1].strip()
-        date = int(lines[i + 2].strip()) * 1000
-        description = lines[i + 3].strip()
-        changed = lines[i + 4].strip()
-        file, insert, delete = process_changed(changed)
+        date = int(lines[i + 2].strip())
+        # hash_code = lines[i].strip()
+        # description = lines[i + 3].strip()
+        # changed = lines[i + 4].strip()
+        # file, insert, delete = process_changed(changed)
 
         commit = dict(
-            hash=hash_code,
             author=author,
             date=date,
-            description=description,
-            file_changed=file,
-            insertion=insert,
-            deletion=delete,
+            # hash=hash_code,
+            # description=description,
+            # file_changed=file,
+            # insertion=insert,
+            # deletion=delete,
         )
         commits.append(commit)
     return commits
