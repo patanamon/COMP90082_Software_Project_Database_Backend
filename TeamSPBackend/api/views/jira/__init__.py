@@ -1,0 +1,1 @@
+default_app_config = 'TeamSPBackend.api.views.jira.apps.AutoConfig'

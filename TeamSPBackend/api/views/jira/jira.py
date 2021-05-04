@@ -12,7 +12,7 @@ import time
 
 from django.views.decorators.http import require_http_methods
 from django.http.response import HttpResponse
-
+from django.core.exceptions import ObjectDoesNotExist
 # for file op
 import os
 import time
@@ -39,8 +39,8 @@ def jira_login(request):
     username, password = session_interpreter(request)
     jira = Jira(
         url='https://jira.cis.unimelb.edu.au:8444',
-        username=username,
-        password=password,
+        username='xiefx',
+        password='Qq970128@',
         verify_ssl=False
     )
     return jira
@@ -240,13 +240,20 @@ def get_issues_per_sprint(request, team):
 
 
 @require_http_methods(['GET'])
-def auto_get_ticket_count_team_timestamped(request, team):
+def auto_get_ticket_count_team_timestamped(request):
+     jira = jira_login(request)
+     # jira = Jira(
+     #    url='https://jira.cis.unimelb.edu.au:8444',
+     #    username='',
+     #    password='',
+     #    verify_ssl=False
+     # )
+     allProjects = jira.projects()
+     for p in allProjects:
+       start_schedule(get_ticket_count_team_timestamped, 60*60*24, request, p['name'])
 
-
-     start_schedule(get_ticket_count_team_timestamped, 15, request, team)
-     data = get_ticket_count_team_timestamped_withoutupdate(request, team)
-
-     return data
+     resp = 'success!'
+     return HttpResponse(resp, content_type="application/json")
 
 
 @require_http_methods(['GET'])
@@ -254,7 +261,12 @@ def get_ticket_count_team_timestamped(request, team):
     """ Return a HttpResponse, data contains 3 kinds of issues timestamped with unix time"""
     try:
         jira = jira_login(request)
-
+        # jira = Jira(
+        #     url='https://jira.cis.unimelb.edu.au:8444',
+        #     username='',
+        #     password='',
+        #     verify_ssl=False
+        # )
 
         todo = jira.jql('project = ' + team + ' AND status = "To Do"')['total']
         in_progress = jira.jql('project = ' + team + ' AND status = "In Progress"')['total']
@@ -282,6 +294,12 @@ def get_ticket_count_team_timestamped_withoutupdate(request, team):
     """ Return a HttpResponse, data contains 3 kinds of issues timestamped with unix time"""
     try:
         jira = jira_login(request)
+        # jira = Jira(
+        #     url='https://jira.cis.unimelb.edu.au:8444',
+        #     username='',
+        #     password='',
+        #     verify_ssl=False
+        # )
 
 
         todo = jira.jql('project = ' + team + ' AND status = "To Do"')['total']
@@ -315,6 +333,12 @@ def get_contributions(request, team):
     """
     try:
         jira = jira_login(request)
+        # jira = Jira(
+        #     url='https://jira.cis.unimelb.edu.au:8444',
+        #     username='',
+        #     password='',
+        #     verify_ssl=False
+        # )
 
         students, names = get_member_names(get_project_key(team, jira), jira)
         count = []
@@ -346,16 +370,21 @@ def get_contributions(request, team):
 @require_http_methods(['POST'])
 def setGithubJiraUrl(request,team):
 
-    jira = jira_login(request)
+    # jira = jira_login(request)
 
     data = request.POST
     git_url = data['git_url']
     jira_url = data['jira_url']
 
-
-    # team = 'swen90013-2020-sp'
-    jira_obj = Urlconfig(space_key=team,git_url=git_url,jira_url = jira_url)
-    jira_obj.save()
+    try:
+        existRecord = Urlconfig.objects.get(space_key=team)
+        existRecord.git_url=git_url
+        existRecord.jira_url=jira_url
+        existRecord.save()
+    except ObjectDoesNotExist:
+        # team = 'swen90013-2020-sp'
+        jira_obj = Urlconfig(space_key=team,git_url=git_url,jira_url = jira_url)
+        jira_obj.save()
 
 
     resp = init_http_response(
