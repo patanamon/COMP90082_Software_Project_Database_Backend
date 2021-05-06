@@ -126,7 +126,6 @@ Method: Post
 Request: csv_file
 """
 
-
 # def create_team(request, subject_id):
 #     file = request.FILES.get('file')
 #     print(file)
@@ -219,7 +218,6 @@ Url: localhost:8000/api/v1/team/<int:team_id>
 Params: team_id
 Request: None
 """
-
 
 # def get_team(request, team_id: int):
 #     try:
@@ -448,7 +446,6 @@ Request:
 
 @check_body
 def update_team(request, body, *args, **kwargs):
-
     team_id = kwargs.get('id')
     update_team_dto = UpdateTeamDTO()
     body_extract(body, update_team_dto)
