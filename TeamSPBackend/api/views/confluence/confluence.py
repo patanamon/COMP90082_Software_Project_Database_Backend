@@ -322,7 +322,7 @@ def get_user_list(request, space_key):
     Parameter: space_key
     """
     try:
-        data = []
+        user_list = []
         for user_info in UserList.objects.filter(space_key=space_key):
             user_detail = {
                 "name": user_info.user_name,
@@ -330,10 +330,11 @@ def get_user_list(request, space_key):
                 "email": user_info.email,
                 "picture": user_info.picture
             }
-            data.append(user_detail)
+            user_list.append(user_detail)
         resp = init_http_response(
             RespCode.success.value.key, RespCode.success.value.msg)
-        resp['data'] = data
+        resp['data'] = {"total": len(user_list),
+                        "user_list": user_list}
         return HttpResponse(json.dumps(resp), content_type="application/json")
     except:
         resp = {'code': -1, 'msg': 'error'}
