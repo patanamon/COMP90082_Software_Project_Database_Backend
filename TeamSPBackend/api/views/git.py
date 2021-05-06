@@ -3,7 +3,7 @@ from collections import defaultdict
 import logging, time
 
 from django.views.decorators.http import require_http_methods
-
+from TeamSPBackend.git.views import update_individual_commits
 from TeamSPBackend.common.github_util import get_commits, get_pull_request
 from TeamSPBackend.api.dto.dto import GitDTO
 from TeamSPBackend.common.choices import RespCode
@@ -11,22 +11,31 @@ from TeamSPBackend.common.utils import make_json_response, body_extract, init_ht
 from TeamSPBackend.git.models import StudentCommitCounts, GitCommitCounts
 from TeamSPBackend.project.models import ProjectCoordinatorRelation
 
-
 logger = logging.getLogger('django')
 
 
 @require_http_methods(['GET'])
 def get_git_individual_commits(request, space_key):
-
-    data=[]
-
-    for item in StudentCommitCounts.objects.filter(space_key=space_key):
-
-        temp = {
-            "student": str(item.student_name),
-            "commit_count": str(item.commit_counts)
-        }
-        data.append(temp)
+    data = []
+    if StudentCommitCounts.objects.filter(space_key=space_key).exists():
+        for item in StudentCommitCounts.objects.filter(space_key=space_key):
+            temp = {
+                "student": str(item.student_name),
+                "commit_count": str(item.commit_counts)
+            }
+            data.append(temp)
+    else:
+        if ProjectCoordinatorRelation.objects.filter(space_key=space_key).exists():
+            update_individual_commits()
+            for item in StudentCommitCounts.objects.filter(space_key=space_key):
+                temp = {
+                    "student": str(item.student_name),
+                    "commit_count": str(item.commit_counts)
+                }
+            data.append(temp)
+        else:
+            resp = init_http_response_my_enum(RespCode.invalid_parameter)
+            return make_json_response(resp=resp)
 
     resp = init_http_response_my_enum(RespCode.success, data)
     return make_json_response(resp=resp)
