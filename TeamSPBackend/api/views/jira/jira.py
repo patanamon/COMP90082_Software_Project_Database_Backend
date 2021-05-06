@@ -42,7 +42,7 @@ def jira_login(request):
 
 
 def get_project_key(project, jira):
-    """"Get corresponding project key"""
+    """"Get unique project key for jira query, from project name"""
     jira_resp = jira.projects()
     result = ""
     for d in jira_resp:
@@ -139,6 +139,8 @@ def get_issues_team(request, team):
         return HttpResponse(json.dumps(resp), content_type="application/json")
 
 
+# Not working
+# TODO: switch to jql solution
 @require_http_methods(['GET'])
 def get_comment_count_individual(request, team, student):
     """ Return a HttpResponse, with username and comment fields"""
