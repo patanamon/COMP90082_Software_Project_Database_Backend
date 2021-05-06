@@ -11,6 +11,7 @@ from TeamSPBackend.common.utils import make_json_response, init_http_response, c
 from TeamSPBackend.confluence.models import UserList
 from TeamSPBackend.confluence.models import MeetingMinutes
 from TeamSPBackend.confluence.models import PageHistory
+from TeamSPBackend.coordinator.models import Coordinator
 
 
 @require_http_methods(['GET'])
@@ -294,11 +295,9 @@ def get_spaces_by_key(request, key_word):
     Request: key_word
     """
     # TODO: get confluence username and password
-    # user = request.session.get('user')
-    # username = user['atl_username']
-    # password = user['atl_password']
-    username = ""
-    password = ""
+    coordinator = Coordinator.objects.get(id=1)
+    username = coordinator.atl_username
+    password = coordinator.atl_password
     try:
         confluence = log_into_confluence(username, password)
         spaces = confluence.get_all_spaces()
