@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'TeamSPBackend.subject',
     'TeamSPBackend.invitation',
     'TeamSPBackend.team',
+    'TeamSPBackend.git',
     'TeamSPBackend.api',
     'TeamSPBackend.slack_',
     'TeamSPBackend.confluence',
