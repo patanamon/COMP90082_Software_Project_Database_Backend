@@ -10,9 +10,13 @@ from .views.account import account_router, login, logout, update_account, delete
 from .views.subject import subject_router, update_subject, delete_subject
 from .views.team import team_router, get_team_members, team_member_configure, team_configure
 from .views.slack import get_team_data, get_all_member_data, get_member_data
-from .views.git import get_git_commits, get_git_pr
+from TeamSPBackend.api.views.project.project import import_project_in_batch
+from .views.git import get_git_commits, get_git_pr, get_git_individual_commits
+
 
 urlpatterns = [
+    # Project Related API
+    path('project/import',import_project_in_batch),
     # Invitation Related API
     path('invite', invitation_router),
     path('invite/accept', invite_accept),
@@ -37,13 +41,15 @@ urlpatterns = [
 
     # Team Related API
     path('team', team_router),
-    path('team/<int:id>', team_router),
+    # path('team/<int:id>', team_router),
     path('team/<int:id>/members', get_team_members),
     path('team/<int:team_id>/members/<int:team_member_id>', team_member_configure),
     path('team/<int:team_id>/configuration', team_configure),
+    path('team/<space_key>', confluence.get_user_list),
 
     # Git Related API
-    path('git/commit', get_git_commits),
+    path('git/commit/<space_key>', get_git_commits),
+    path('git/individual_commits/<space_key>', get_git_individual_commits),
     path('git/pullrequest', get_git_pr),
 
     # Confluence Related API
@@ -62,7 +68,11 @@ urlpatterns = [
     # COMP90082 21 S1 sprint1
     path('confluence/spaces/<key_word>', confluence.get_spaces_by_key),
     path('confluence/<space_key>/meeting_minutes', confluence.get_meeting_minutes),
+
     path('confluence/imported_projects', confluence.get_imported_project),
+
+    path('confluence/spaces/<space_key>/page_count', confluence.get_page_count_by_time),
+
 
     # Jira Related API
     path('jira/<team>/jiracfd', helpJira.get_jira_CFD),
