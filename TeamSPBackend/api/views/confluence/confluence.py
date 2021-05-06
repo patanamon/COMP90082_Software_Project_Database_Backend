@@ -10,7 +10,12 @@ from TeamSPBackend.common.utils import make_json_response, init_http_response, c
     body_extract, mills_timestamp
 from TeamSPBackend.confluence.models import UserList
 from TeamSPBackend.confluence.models import MeetingMinutes
+
+from TeamSPBackend.project.models import ProjectCoordinatorRelation
+from TeamSPBackend.coordinator.models import Coordinator
+
 from TeamSPBackend.confluence.models import PageHistory
+
 
 
 @require_http_methods(['GET'])
@@ -394,3 +399,42 @@ def get_page_count_by_time(request, space_key):
     except:
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
+
+@require_http_methods(['GET'])
+def get_imported_project(request):
+    """
+    get the imported projects
+    Method: GET
+    Request: coordinator_id
+    Return: status code, message, list of project space keys and space names
+    """
+    # user = request.session.get('user')
+    # username = user['atl_username']
+    # password = user['atl_password']
+
+    coordinator_id = 1   # it is a hard code, needs to change in the future
+
+    # another way to get username and password
+    coordinator = Coordinator.objects.get(id=coordinator_id)
+    username = coordinator.atl_username
+    password = coordinator.atl_password
+    try:
+        confluence = log_into_confluence(username, password)
+        data = []
+        # get all the space keys from DB where coordinator_id = given id
+        for project in ProjectCoordinatorRelation.objects.filter(coordinator_id=coordinator_id):
+            space_key = project.space_key
+            space = confluence.get_space(space_key)
+            space_name = space['name']
+            data.append({
+                'space_key': space_key,
+                'space_name': space_name
+            })
+        resp = init_http_response(
+            RespCode.success.value.key, RespCode.success.value.msg)
+        resp['data'] = data
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+    except:
+        resp = {'code': -1, 'msg': 'error'}
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+
