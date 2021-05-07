@@ -292,7 +292,6 @@ def get_ticket_count_team_timestamped(request, team):
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
 
-
 @require_http_methods(['GET'])
 def get_contributions(request, team):
     """ Return a HttpResponse, data contains display names and Done Counts
@@ -305,6 +304,7 @@ def get_contributions(request, team):
     """
     try:
         jira = jira_login(request)
+
         students, names = get_member_names(get_project_key(team, jira), jira)
         count = []
         for student in students:
@@ -318,7 +318,7 @@ def get_contributions(request, team):
                 'student': name,
                 'done_count': count
             })
-            jira_obj = IndividualContributions(student=name, done_count=count)
+            jira_obj = IndividualContributions(space_key=team,student=name, done_count=count)
             jira_obj.save()
 
         resp = init_http_response(
@@ -328,6 +328,22 @@ def get_contributions(request, team):
     except:
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
+
+
+@require_http_methods(['GET'])
+def get_contributions_from_db(request,team):
+    try:
+
+        allExistRecord=list(IndividualContributions.objects.filter(space_key=team).values('student','done_count'))
+
+        resp = init_http_response(
+            RespCode.success.value.key, RespCode.success.value.msg)
+        resp['data'] = allExistRecord
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+    except:
+        resp = {'code': -1, 'msg': 'error'}
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+
 
 @require_http_methods(['GET'])
 def get_ticket_count_team_timestamped_afterthefirstrun(request, team):
@@ -356,18 +372,28 @@ def get_ticket_count_team_timestamped_afterthefirstrun(request, team):
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
 
+
+@require_http_methods(['GET'])
+def get_ticket_count_team_timestamped_from_db(request,team):
+    try:
+        allExistRecord=list(JiraCountByTime.objects.filter(space_key=team).values('count_time','todo','in_progress','done'))
+
+        resp = init_http_response(
+            RespCode.success.value.key, RespCode.success.value.msg)
+        resp['data'] = allExistRecord
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+    except:
+        resp = {'code': -1, 'msg': 'error'}
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+
+
 @require_http_methods(['GET'])
 def auto_get_ticket_count_team_timestamped(request):
-     jira = Jira(
-        url='https://jira.cis.unimelb.edu.au:8444',
-        username='',
-        password='',
-        verify_ssl=False
-     )
+
      allProjects = jira.projects()
      for p in allProjects:
         # first run, fetch all the records from the date the project is created
-        get_ticket_count_team_timestamped(request,p['name'])
+        get_ticket_count_team_timestamped(request, p['name'])
 
      time.sleep(60 * 60 * 24)
      for p in allProjects:
@@ -379,8 +405,6 @@ def auto_get_ticket_count_team_timestamped(request):
 
 @require_http_methods(['POST'])
 def setGithubJiraUrl(request,team):
-
-    jira = jira_login(request)
 
     data = request.POST
     git_url = data['git_url']
@@ -401,6 +425,19 @@ def setGithubJiraUrl(request,team):
          RespCode.success.value.key, RespCode.success.value.msg)
     # resp['data'] = data
     return HttpResponse(json.dumps(resp), content_type="application/json")
+
+@require_http_methods(['GET'])
+def get_url_from_db(request,team):
+    try:
+        allExistRecord=list(Urlconfig.objects.filter(space_key=team).values('git_url','jira_url'))
+
+        resp = init_http_response(
+            RespCode.success.value.key, RespCode.success.value.msg)
+        resp['data'] = allExistRecord
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+    except:
+        resp = {'code': -1, 'msg': 'error'}
+        return HttpResponse(json.dumps(resp), content_type="application/json")
 
 # Legacy APIs, not working
 

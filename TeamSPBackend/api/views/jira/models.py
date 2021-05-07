@@ -16,6 +16,7 @@ class JiraCountByTime(models.Model):
 
 class IndividualContributions(models.Model):
     id = models.AutoField(primary_key=True)
+    space_key = models.CharField(max_length=256, null=False)
     student = models.CharField(max_length=256, null=False)
     done_count = models.IntegerField(null=False)
 
