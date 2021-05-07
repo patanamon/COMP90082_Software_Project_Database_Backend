@@ -86,6 +86,8 @@ urlpatterns = [
     # new
     path('jira/<team>/ticket_count', jira.get_ticket_count_team_timestamped),
     path('jira/<team>/contributions', jira.get_contributions),
+    path('jira/<team>/auto_ticket_count', jira.auto_get_ticket_count_team_timestamped),
+    path('jira/<team>/config', jira.setGithubJiraUrl),
 
     # legacy but not working
     #path('jira/<team>/jira_cfd', jira.get_jira_cfd),
