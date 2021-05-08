@@ -25,15 +25,10 @@ def update_space_user_list(coordinator_id, space_key):
     user_list = []
     user_set = {atl_username, }
     group_set = set()
-    GROUP_LIMIT = 51  # this is a limit of user lists, if there is more than 50 users in a space, it is likely to be
+    GROUP_LIMIT = 30  # this is a limit of user lists, if there is more than 30 users in a space, it is likely to be
     # a public space.
     permissions = conf.get_space_permissions(space_key)
-    if permissions == {}:  # if there is no permission specified, it is open to all confluence users.
-        members = conf.get_group_members("confluence-users", limit=GROUP_LIMIT)
-        for member in members:
-            if member["username"] not in user_set:
-                user_set.add(member["username"])
-                user_list.append(get_user(member, space_key))
+    # notice that if permissions == {}, that means the user don't have the admin permission to the space.
     for permission in permissions:
         for detail in permission["spacePermissions"]:
             user = detail["userName"]
