@@ -39,8 +39,8 @@ def jira_login(request):
     username, password = session_interpreter(request)
     jira = Jira(
         url='https://jira.cis.unimelb.edu.au:8444',
-        username=username,
-        password=password,
+        username='',
+        password='',
         verify_ssl=False
     )
     return jira
@@ -389,7 +389,7 @@ def get_ticket_count_team_timestamped_from_db(request,team):
 
 @require_http_methods(['GET'])
 def auto_get_ticket_count_team_timestamped(request):
-
+     jira = jira_login(request)
      allProjects = jira.projects()
      for p in allProjects:
         # first run, fetch all the records from the date the project is created
