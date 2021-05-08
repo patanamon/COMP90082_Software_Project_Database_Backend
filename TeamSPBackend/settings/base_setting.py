@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'TeamSPBackend.slack_',
     'TeamSPBackend.confluence',
     'TeamSPBackend.project',
-    'TeamSPBackend.coordinator'
+    'TeamSPBackend.coordinator',
+    'TeamSPBackend.api.views.jira'
 ]
 
 MIDDLEWARE = [

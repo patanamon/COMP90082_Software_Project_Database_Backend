@@ -63,6 +63,26 @@ class JiraTestCases(TestCase):
         #print(response.json()["data"])
         self.assertEqual(response.json()["code"], RespCode.success.value.key, "response is not success")
 
+    def test_get_url_from_db_success(self):
+        team = "swen90013-2020-sp"
+        response = self.client.get('/api/v1/jira/' + team + '/get_url_db')
+        # print(response.json()["data"])
+        self.assertEqual(response.json()["code"], RespCode.success.value.key, "response is not success")
+
+    def test_get_contributions_from_db_success(self):
+        team = "swen90013-2020-sp"
+        response = self.client.get('/api/v1/jira/' + team + '/get_contribution_db')
+        #print(response.json()["data"])
+        self.assertEqual(response.json()["code"], RespCode.success.value.key, "response is not success")
+
+    def test_get_ticket_count_db_success(self):
+        team = "swen90013-2020-sp"
+        response = self.client.get('/api/v1/jira/' + team + '/get_ticket_count_db')
+        #print(response.json()["data"])
+        self.assertEqual(response.json()["code"], RespCode.success.value.key, "response is not success")
+
+
+
     """
     # not applicable yet
     def test_get_jira_cfd_success(self):
