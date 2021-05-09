@@ -1,0 +1,1181 @@
+682839c769c0d514fa3570bd3f67e47f1cc24cb2
+zhanglihuan
+1605343598
+fix team api
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+e3af56b83823656b261f6cac6b021ac2d1918bca
+zhanglihuan
+1605343278
+fix team api
+ 1 file changed, 1 deletion(-)
+
+3d79b8647235f9eeb70656da0b0646c359de1b1a
+jinxinh
+1605314053
+Added team_configure api
+ 4 files changed, 54 insertions(+), 3 deletions(-)
+
+43829e34fe23efc0ba589aefa6c5c62e1dfebc31
+jinxinh
+1605312036
+Added new column atl_account for Student table Signed-off-by: jinxinh <jinxinh@student.unimelb.edu.au>
+ 3 files changed, 4 insertions(+)
+
+c47b045785f5c812f58c84456d081e98a794a642
+Zachary Ho
+1605146848
+added more confluence unit tests to improve test coverage
+ 6 files changed, 204 insertions(+), 184 deletions(-)
+
+318df9e936981e2a62425bb29fb4029e4b9b70c3
+jinxinh
+1604915492
+Added two columns in Student model; Added team_member_configure api
+ 4 files changed, 58 insertions(+), 4 deletions(-)
+
+f8c9068987c2d97b6706be7709337cf2e4130116
+樊钊辰
+1604831235
+fix bugs in pr
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+92f922be161be978e4155af92af1eaaa98f734ba
+樊钊辰
+1604823724
+update user model, add columns git_username, slack_email
+ 1 file changed, 2 insertions(+)
+
+328ae08ab48cd8c93fd8c68e75438ff3421b32da
+zhanglihuan
+1604725171
+update supervisors api
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+f70d68d9ba1e381df8aad37f8c4cf22c1c1c98fb
+Zachary Ho
+1604574649
+fixed up some functions to do with subject apis. Ran old tests and fixed up some bugs.
+ 6 files changed, 11 insertions(+), 36 deletions(-)
+
+8e65b3e7772ba8564525a33d0e09a52aee008925
+Zachary Ho
+1604543134
+test multi get team success for admin
+ 1 file changed, 64 insertions(+), 11 deletions(-)
+
+e1cef43ca17cc0781cec8bb04f1ab064c396fc97
+Zachary Ho
+1604542910
+test multi get team success for supervisor
+ 1 file changed, 47 insertions(+), 7 deletions(-)
+
+7340b57f9caa2f1b8c4054815853376a6681fe70
+Zachary Ho
+1604542784
+tested multi get teams for coordinator
+ 5 files changed, 281 insertions(+), 1 deletion(-)
+
+2489415f15c3613fc3ef4a8f26cbdbe336f4c5ed
+Zachary Ho
+1604480063
+wrote and passed failure scenarios for test_get_team
+ 2 files changed, 211 insertions(+), 23 deletions(-)
+
+409ac3a125f4394fe7a68dee5272faf10862c01b
+Zachary Ho
+1604479573
+wrote and passed unit test for test_get_team
+ 6 files changed, 172 insertions(+), 50 deletions(-)
+
+e1c1a36c1573506f282234998f579bef57818a26
+Xinbo Sun
+1604474652
+jira_unittest
+ 2 files changed, 141 insertions(+)
+
+a40b0ffe616ae95a9b532a70108acf5f230bba88
+樊钊辰
+1604385525
+add unittest for git
+ 4 files changed, 177 insertions(+)
+
+5b250c6ae213687514a35d76c78a0ae0d945d91a
+樊钊辰
+1603706733
+add git pr func
+ 3 files changed, 74 insertions(+), 3 deletions(-)
+
+bc582a618deff7a1992bd2c75017dada3f41cec3
+zhanglihuan
+1603693908
+fix bug
+ 1 file changed, 11 insertions(+), 12 deletions(-)
+
+c7966a591ed3e126a7ae15e360d0bdb003c44715
+zhanglihuan
+1603693186
+fix bug
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+188459706be9e5ab9cef564d5ad93e3790afe510
+zhanglihuan
+1603692864
+fix bug
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+19c55abbad753be339c357682484e55b635aeb60
+zhanglihuan
+1603692444
+fix bug
+ 1 file changed, 1 insertion(+), 8 deletions(-)
+
+f3c5d7ceaaffd2257b3d753a7e2ea9fc3eefa059
+zhanglihuan
+1603692334
+develop slack api
+ 1 file changed, 6 insertions(+), 5 deletions(-)
+
+d02bf21ca62dec75ee3d69d00dbbf03a26bab33f
+Zachary Ho
+1603688153
+created failure unit test for update_team
+ 1 file changed, 23 insertions(+), 2 deletions(-)
+
+4962a9cd49d973b4c4c0d1746ef4f31c53f5be26
+Zachary Ho
+1603673962
+updated unit test for update_team
+ 2 files changed, 63 insertions(+), 34 deletions(-)
+
+0e257804f6dd3820f648d259b00e8d31a36d0a1c
+Zachary Ho
+1603671299
+wrote unit test for import team. Getting server error
+ 2 files changed, 52 insertions(+)
+
+8bac2cd6150be8a313f6337e44b46fd4f72b6dde
+zhanglihuan
+1603652143
+develop slack api
+ 2 files changed, 279 deletions(-)
+
+ad2211b9963b0f1044322bc87d28975790617cbf
+zhanglihuan
+1603652084
+develop slack api
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+27e17adb8894ee072408b62dcea7afa288eddc3b
+zhanglihuan
+1603652033
+develop slack api
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+efa4330f7028506de6a497ca7169ae6e6c3ad9d8
+zhanglihuan
+1603651981
+develop slack api
+ 1 file changed, 13 insertions(+), 1 deletion(-)
+
+3ffdc9e97e2d968cedad9a240eee62a45c9dd3a9
+zhanglihuan
+1603651797
+develop slack api
+ 1 file changed, 45 insertions(+), 63 deletions(-)
+
+263e2d96125fbf65d8aea81a42abd528b28102da
+zhanglihuan
+1603651034
+develop slack api
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+4e3ab4bc907c455022c479fa8bf57b753904ea55
+zhanglihuan
+1603650961
+develop slack api
+ 1 file changed, 24 insertions(+)
+
+11c8dd364f4473fe2ccd7898c19f9e3cff1a7047
+zhanglihuan
+1603650706
+develop slack api
+ 1 file changed, 125 insertions(+), 88 deletions(-)
+
+679ae6df9b7b488767c2453c0fbfde7bbaefe7e6
+zhanglihuan
+1603650423
+develop slack api
+ 1 file changed, 1 deletion(-)
+
+997277af3cab26b68df9fb1483588e611ffad98f
+zhanglihuan
+1603650272
+develop slack api
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+7625d593411fcabeba135ed7edf11fd58f401f38
+zhanglihuan
+1603650210
+develop slack api
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+a79a300669aa774b1d90a26514e36664d34eb04f
+zhanglihuan
+1603649458
+develop slack api
+ 1 file changed, 4 insertions(+), 6 deletions(-)
+
+4e9ccea3abd37830d57513bd9e3452fede83e0ac
+zhanglihuan
+1603649278
+develop slack api
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+8db7ce284e5da8c8e9c4c3e8c47061e0e0d87c9f
+zhanglihuan
+1603649257
+develop slack api
+ 2 files changed, 258 insertions(+), 6 deletions(-)
+
+89c2c8cf1d63334449f7ca61d9bf4d41f15122a2
+zhanglihuan
+1603520516
+develop slack api
+ 7 files changed, 209 insertions(+), 8 deletions(-)
+
+6e0d51e2a0d7a1f31dc7ea7c98c7647064fe88e1
+jinxinh
+1603280442
+Complete get_team_data and get_member_data apis for Slack.
+ 2 files changed, 105 insertions(+), 36 deletions(-)
+
+7f59abf4329b5fe32914fcf028b6b6c7150bcdf7
+Zachary Ho
+1603065555
+tested the confluence contributions api with personal confluence credentials
+ 2 files changed, 29 insertions(+)
+
+272928d23c71abcbce733c0e1b566b41f4103871
+jinxinh
+1603043555
+Refine the code structure
+ 1 file changed, 32 insertions(+), 25 deletions(-)
+
+481b5fa50b6b69f7342d7ca8f14b13852662272d
+jinxinh
+1603038600
+Add sprint filter Signed-off-by: jinxinh <jinxinh@student.unimelb.edu.au>
+ 8 files changed, 134 insertions(+), 28 deletions(-)
+
+4fb541cbc71e42ca2cff90695d7bb4109972d307
+Zachary Ho
+1602837948
+changed the external API called to retrieve confluence page contributions.
+ 2 files changed, 23 insertions(+), 51 deletions(-)
+
+18e0e337a82f2a5068fddbe3f91423717c1e113e
+Xinbo Sun
+1602830194
+Update account.py
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+cdbb69e765b18e5a8a69349dc0d8db8b847c774f
+Xinbo Sun
+1602829960
+update store atl user data
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+c67d5ea02d6295948f26774b094693d2cda2eecf
+zhanglihuan
+1602824756
+update url
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+a6d655dc487b4a55a3e3db1df4b346620c70f5a7
+zhanglihuan
+1602785553
+update team table
+ 1 file changed, 10 insertions(+)
+
+5d1c408d95cc37fbbfcd5d63e6a239c47a22e04c
+Xinbo Sun
+1602418171
+Jira apis updated
+ 3 files changed, 142 insertions(+), 2 deletions(-)
+
+33b5f313a568b8d52c69706373ccaade0bb9a8c0
+jinxinh
+1602346186
+Bug fixed: user_id to student_id
+ 2 files changed, 6 insertions(+), 7 deletions(-)
+
+cdf04cdb51834b8fa93ecc85909910af97cad83a
+zhanglihuan
+1602239793
+fix the team api
+ 4 files changed, 31 insertions(+), 53 deletions(-)
+
+d1756ebf5ec649cc6e7889da6a31723623f8eff1
+zhanglihuan
+1602238592
+fix the team api
+ 2 files changed, 3 insertions(+), 2 deletions(-)
+
+894e2e9128b4648cf28549dfe5ef477b822d434c
+zhanglihuan
+1602238287
+fix the team api
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+b9d713c42156744183ce3495903298de670cf31f
+jinxinh
+1602109744
+Finish get_member_data api for slack
+ 1 file changed, 11 insertions(+), 3 deletions(-)
+
+8aa0cc4612e845d8dd35da49efe6671f563bd796
+jinxinh
+1602025519
+Refine slack apis Signed-off-by: jinxinh <jinxinh@student.unimelb.edu.au>
+ 2 files changed, 89 insertions(+), 81 deletions(-)
+
+a6ff98deaaab7f6190b3fd6950d42cb6f7f671fb
+jinxinh
+1601991031
+Hot fix Signed-off-by: jinxinh <jinxinh@student.unimelb.edu.au>
+ 2 files changed, 1 insertion(+), 22 deletions(-)
+
+f31ad7a28c81f5e2702824fe23b17fb1f894f7f7
+jinxinh
+1601990884
+Partially finish get_team_data for slack Signed-off-by: jinxinh <jinxinh@student.unimelb.edu.au>
+ 1 file changed, 60 insertions(+), 3 deletions(-)
+
+302bbab8e7d4e57e919938b7fbf5718a617f5f80
+zhanglihuan
+1601617803
+fix the team api
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+a210f0c440ee0a40cb0cc5dfc91d53ebc46f76e7
+jinxinh
+1601464096
+Remove tokens
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+f96e4bdeb141683b7763abb24a067807a8dcf8df
+jinxinh
+1601456194
+Remove client secret for slack Signed-off-by: jinxinh <jinxinh@student.unimelb.edu.au>
+ 2 files changed, 1 insertion(+), 3 deletions(-)
+
+f986374594f0a7ca424455e732cd3a2fa39c2408
+jinxinh
+1601455720
+Move user oauth token into database (team table) Signed-off-by: jinxinh <jinxinh@student.unimelb.edu.au>
+ 3 files changed, 14 insertions(+), 5 deletions(-)
+
+b12f4a2cbf7bbbeedc0cdf4443832bfdcd8de1da
+jinxinh
+1601454269
+Add get_team_data api for slack Signed-off-by: jinxinh <jinxinh@student.unimelb.edu.au>
+ 4 files changed, 87 insertions(+), 9 deletions(-)
+
+e25a3ea8e8720ee821a81269faa4faa5ede0a698
+Zachary Ho
+1601395082
+implemented API to retrieve confluence page contributions (very slow and inefficient method).
+ 4 files changed, 95 insertions(+), 16 deletions(-)
+
+c2ede97edfdc7aadcc0b8cc99c2bec4e03bb7a25
+Zachary Ho
+1601300278
+40% done for confluence contributions
+ 3 files changed, 56 insertions(+), 7 deletions(-)
+
+7381f7442df0787b5a692382004e5440940b0f78
+Zachary Ho
+1601283245
+Finished success-type unit tests for subject apis
+ 5 files changed, 104 insertions(+), 58 deletions(-)
+
+c28057ef559a593db5e1016eb491d2ff4c64fbb7
+Zachary Ho
+1601188660
+wrote unit test on get_subject
+ 3 files changed, 51 insertions(+), 14 deletions(-)
+
+3a88c46a53c9b40c3f64918f3df540e6fbffee6a
+Zachary Ho
+1601184146
+removed code from autowrapping with .pep8 file
+ 2 files changed, 25 insertions(+), 47 deletions(-)
+
+c27930eb734d49bf235dc396f65d9f592b1a4e01
+Zachary Ho
+1601182902
+wrote a bit more code for testing
+ 7 files changed, 31 insertions(+), 52 deletions(-)
+
+49455969bd528d778e1976e254c0091216b99f9e
+zhanglihuan
+1600962437
+fix the git part api
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+2c14840cc4cef54c56d1e4f551f95131903158be
+zhanglihuan
+1600962174
+fix the git part api
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+6f4ba9e10d09cf6383ead40abe18b5590b4108fe
+zhanglihuan
+1600962037
+fix the git part api
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+9e84f7ea9b51bc8843af15b1ce80628da24cf63a
+zhanglihuan
+1600961927
+fix the git part api
+ 4 files changed, 4 insertions(+), 1 deletion(-)
+
+f8ee41f7b159d25105495a50a50083f770b8e6b2
+zhanglihuan
+1600961765
+fix the git part api
+ 14 files changed, 338 insertions(+), 342 deletions(-)
+
+be1f215960dbf92c20a70f310be2b0509e1a46f6
+Procyon1996
+1600667929
+Delete .DS_Store
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+
+e9f36fd9bcc9fca296d1d1fad789ad3bfd0a7cc2
+Procyon1996
+1600667907
+Delete .DS_Store
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+
+fef6bd456465bd1793032088b3f395538f336ba2
+Procyon1996
+1600667883
+Delete .DS_Store
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+
+aa3361b3d7edecea53572cb7f74e9a099ebce53f
+Procyon1996
+1600667829
+Delete .DS_Store
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+
+6442a4089dbbfb8e464404f46807799f09d708f9
+Procyon1996
+1600667782
+Delete .DS_Store
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+
+5d0835fc955ca1d7cb1c84ee268c0d73097396fa
+樊钊辰
+1600664741
+delete rubbish file
+ 6 files changed, 309 deletions(-)
+
+006fbc74f05a8ef61eb44b942398172d9d1da799
+樊钊辰
+1600664624
+update git as requried
+ 5 files changed, 98 insertions(+), 68 deletions(-)
+
+ea9b936a6accf6d4791f673bb75ed751d1d479e0
+Procyon
+1600580775
+get git info individual and total
+ 4 files changed, 496 insertions(+), 1 deletion(-)
+
+6d918940e3e52c0a649d354247d84549d30b52ab
+zhanglihuan
+1600062993
+update subject
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+70ecd0268441c9db3cc30841937d4cd5df691041
+Zachary Ho
+1599989130
+Wrote tests for get subject and multiget subject
+ 5 files changed, 140 insertions(+), 65 deletions(-)
+
+c544f4c29272d6a3f1a08f438fa30b662717d79a
+Zachary Ho
+1599979291
+finished supervisor tests.
+ 2 files changed, 27 insertions(+), 57 deletions(-)
+
+2914e41c129c261d479310c81f91bd7e5fe0bb35
+Zachary Ho
+1599901559
+wrote test_get_supervisor.py
+ 4 files changed, 155 insertions(+), 28 deletions(-)
+
+ea659f4dc067c81e9cf47c78a78acd0bf61433be
+Xinbo Sun
+1599806214
+updated 09/11
+ 1 file changed, 32 insertions(+), 1 deletion(-)
+
+14b9872048c14dc65a238e407502e7a4ac387db9
+zhanglihuan
+1599793380
+update atl login
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+dccbb41e23dbd4698db226a6d0bb6ffdb2874152
+zhanglihuan
+1599789832
+update atl login
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+34537ac429a043c187949bd328dcd9f7833d5ffc
+zhanglihuan
+1599789423
+update atl login
+ 3 files changed, 8 insertions(+), 5 deletions(-)
+
+ae6bebd3a794710a1ad5bc18d0dcada22ed4de9b
+zhanglihuan
+1599788681
+update atl login
+ 2 files changed, 10 insertions(+), 2 deletions(-)
+
+0508e2d6642551acf48aea832051664e29a1cb02
+Xinbo Sun
+1599768541
+get all tickets
+ 2 files changed, 27 insertions(+), 2 deletions(-)
+
+d14b7e88a4da3a8a58bca133c483aa9dbd7c6dce
+Xinbo Sun
+1599767615
+get tickets and their status of each student
+ 3 files changed, 77 insertions(+), 19 deletions(-)
+
+c978c5baac992a1e52f9c1df21671bda959cf158
+zhanglihuan
+1599758924
+update multi get supervisor api
+ 2 files changed, 74 insertions(+), 3 deletions(-)
+
+56d84890c2d55abb1a8e899cc6747a3c95c679f0
+zhanglihuan
+1599757292
+update multiget team api
+ 2 files changed, 79 insertions(+), 58 deletions(-)
+
+8438c4d1037febda1be35ab8d250d60a46446989
+zhanglihuan
+1599755516
+update add team api
+ 6 files changed, 82 insertions(+), 47 deletions(-)
+
+ea6dade33d6fb0cfddcef22f95510214f16c92a9
+zhanglihuan
+1599751961
+update subject api
+ 4 files changed, 44 insertions(+), 42 deletions(-)
+
+485704a4a8fd09edd37d3170c63fa8eb8c75d79b
+zhanglihuan
+1599748594
+update subject api
+ 6 files changed, 55 insertions(+), 60 deletions(-)
+
+a739e9b0f9a78935bc16c44a9e5f93a1de1cc18e
+jinxinh
+1599728337
+Resolve name confliction for importing team members
+ 5 files changed, 16 insertions(+), 8 deletions(-)
+
+54cb608eec02a8dfc81d6a61497ae56c26eec5f2
+zhanglihuan
+1599019265
+update unimelb smtp server
+ 1 file changed, 2 insertions(+)
+
+1f799d8c3d36a51857f89de4d0d191c90c4c7a56
+zhanglihuan
+1599017708
+update unimelb smtp server
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+640b212a9c6dcb9e18f4b9aeac0275d2f69be5d1
+zhanglihuan
+1599017124
+update unimelb smtp server
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+6277828e3f7a527512beba439dccc6cd57caa7bc
+zhanglihuan
+1599016998
+update unimelb smtp server
+ 2 files changed, 5 insertions(+), 3 deletions(-)
+
+addd3b6b496af37ba2e00e4f92e3e5ef4f646a46
+zhanglihuan
+1599016052
+update unimelb smtp server
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+73a2d05728d23a6ca9586c31422043d93d13ff9c
+zhanglihuan
+1599015919
+update unimelb smtp server
+ 1 file changed, 2 insertions(+)
+
+3f263a4e5a24c730e26f8dd67fb29a653bfc904e
+zhanglihuan
+1599015231
+update unimelb smtp server
+ 3 files changed, 17 insertions(+), 13 deletions(-)
+
+35eeab5334d3721d428db1acf936e40c216ca93f
+jinxinh
+1598982798
+Bugfixed in import_team api
+ 1 file changed, 52 insertions(+), 44 deletions(-)
+
+eb5d4ced965b12846e6ec03c022c691a6fbc0ff0
+jinxinh
+1598980864
+Add get_team_members function in confluence.py; Finished import_team api; Changed Student Model;
+ 3 files changed, 78 insertions(+), 8 deletions(-)
+
+74b6e74da88bc1dcc3a42f4e9a23840b23417bc4
+jinxinh
+1598941082
+Signed-off-by: jinxinh <jinxinh@student.unimelb.edu.au>
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+f0c5aea9a2c6c9df8ca5c696b996d12ef4f1f27d
+Xinbo Sun
+1598902282
+changed data type to json
+ 2 files changed, 22 insertions(+), 8 deletions(-)
+
+a62f7e100658493c8dc621a7f0f398a0f710b8ac
+Xinbo Sun
+1598879413
+Update urls_v1.py
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+00e127be8b08b6cec539f4320fed62b2e906b99b
+Xinbo Sun
+1598878079
+using session to store credentials
+ 6 files changed, 89 insertions(+), 57 deletions(-)
+
+35543e398ec4852c06c3a3256f48ac231dff2cea
+Xinbo Sun
+1598871338
+get supervisor list
+ 3 files changed, 60 insertions(+), 35 deletions(-)
+
+5033eb83fa9544e18aebe5fb86c71b1cd9d69650
+Xinbo Sun
+1598861126
+search teams
+ 2 files changed, 43 insertions(+), 19 deletions(-)
+
+ea81cca8a79c0929ed7aeaa371fa4632f758b0dc
+Xinbo Sun
+1598812001
+Using POST to securely send password
+ 2 files changed, 35 insertions(+), 35 deletions(-)
+
+6fffa4fc64d2893636fc29680a6ed5e16e4b9fa8
+Xinbo Sun
+1598809129
+searchTeam
+ 2 files changed, 70 insertions(+), 29 deletions(-)
+
+76990998c440476621e8a16755b639b9516c535f
+Zachary Ho
+1598796253
+added login functionality to create team unit test
+ 2 files changed, 78 insertions(+), 8 deletions(-)
+
+175f404ced87c6e6dd2aeaebc0b7fc0681e6e9c4
+zhanglihuan
+1598794751
+accept invitation
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+60d6c2ac996ade211e9bc109b606a217b25449c7
+Xinbo Sun
+1598793798
+frontend send POST request to access jira
+ 18 files changed, 59 insertions(+), 37 deletions(-)
+
+109273a8a8c0bb4d849a95c568193377a794fc02
+Zachary Ho
+1598792380
+formatting
+ 1 file changed, 8 insertions(+), 14 deletions(-)
+
+6b6d184cbc60aca3da9eb9fcf32d1dc1a4f6f846
+Zachary Ho
+1598792267
+created test case for update_team
+ 3 files changed, 55 insertions(+), 30 deletions(-)
+
+af0ace8230e3cd5f7cb3d9c229535148a334152f
+jinxinh
+1598791929
+Fixed update_team api;
+ 1 file changed, 36 insertions(+), 19 deletions(-)
+
+17135311feb3b7b5b30ffcf92410a47899f4993d
+Zachary Ho
+1598790089
+created test_create_team
+ 7 files changed, 121 insertions(+), 13 deletions(-)
+
+639cebec6d8dbc83bbbd5343a35c35357e55e8b3
+zhanglihuan
+1598784102
+accept invitation
+ 9 files changed, 123 insertions(+), 38 deletions(-)
+
+680e4d7cde79bc930cdcb2dacac25a69fa4355d6
+jinxinh
+1598783276
+Fixed get_multi_team api (Paging todo); Fixed insistency in team model
+ 2 files changed, 84 insertions(+), 52 deletions(-)
+
+9ddf2739cb9d1194b730038e6c5e72098b403c29
+jinxinh
+1598777114
+Fixed get_team_members api
+ 2 files changed, 44 insertions(+), 42 deletions(-)
+
+0acaabd578acc3719910e3c848f158d53be7bba5
+Zachary Ho
+1598773353
+added testing files
+ 2 files changed, 39 deletions(-)
+
+2e702fb9a22be2af473ccd2508de8dcdf99ed011
+jinxinh
+1598771232
+Remove 'duration' and 'expired'; Add 'project_name' into create_team request body and get_multi_team return body
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+ea3d440f4a65b32e4302c51a1413e288b7c54de3
+zhanglihuan
+1598716745
+fixbug: cors
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+adb9aa1c5420a51d6ba1595d83ce8432184f46a5
+zhanglihuan
+1598716594
+fixbug: cors
+ 1 file changed, 17 insertions(+)
+
+cd036fd6f991a33d1a2e479c4ae4c5101408dc56
+zhanglihuan
+1598716466
+fixbug: cors
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+07182b30b35633b8c2167a49af0e76bc3e55bc14
+zhanglihuan
+1598716159
+fixbug: cors
+ 1 file changed, 1 deletion(-)
+
+e7f685731b7af418871974eb6aa63dbd967fe706
+zhanglihuan
+1598716022
+fixbug: cors
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+97a8fc214337bee5a82c2187e4ac50e15279ed27
+zhanglihuan
+1598715157
+fixbug: cors
+ 1 file changed, 2 insertions(+)
+
+679e1900140c33f2c7a5726836d0f0097d2d0296
+zhanglihuan
+1598714170
+fixbug: cors
+ 1 file changed, 1 insertion(+)
+
+66147b9b43fc4bb50093913b39b9ac2ed0fc7f40
+zhanglihuan
+1598713906
+fixbug: cors
+ 2 files changed, 3 insertions(+)
+
+d527cd1c3ad7fb9ffb6524431d0b7a610db3d37e
+zhanglihuan
+1598713747
+fixbug: cors
+ 1 file changed, 1 insertion(+)
+
+5fdf4d8b6684f8b8cc0b54280a870ab85b6e6c40
+zhanglihuan
+1598713585
+fixbug: cors
+ 3 files changed, 3 insertions(+)
+
+1832b8f295cbfa39d7fdc45251ae829bc8e03780
+zhanglihuan
+1598697416
+fixbug: proxy
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+c2e63af0caa56a74d3c9071c75348b8e410474ad
+zhanglihuan
+1598697252
+fixbug: proxy
+ 1 file changed, 12 insertions(+), 7 deletions(-)
+
+442971c2b4a8f77b1f02f1ce0560b0e55cdbbd80
+zhanglihuan
+1598696839
+fixbug: proxy
+ 2 files changed, 4 insertions(+), 1 deletion(-)
+
+3f589ba6198265e5b675af641bc935b9578e7434
+zhanglihuan
+1598696068
+fixbug: proxy
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+e3516303f41bb166f5da851cd7bb17b4d4047759
+zhanglihuan
+1598695890
+fixbug: proxy
+ 4 files changed, 16 insertions(+), 4 deletions(-)
+
+a3913c5f8be4af8a69a207b3f5feaded8d4a95ef
+zhanglihuan
+1598694985
+send email
+ 6 files changed, 128 insertions(+), 8 deletions(-)
+
+47a435de852c3004e40172d32c4a8579409b3c78
+jinxinh
+1598691490
+Reworked team-related apis
+ 1 file changed, 134 insertions(+), 142 deletions(-)
+
+4017f2ce31cc415ff2d1e4679bf53ffdb939eb4c
+zhanglihuan
+1598687843
+update invitation
+ 5 files changed, 42 insertions(+), 46 deletions(-)
+
+9088ec69d0faaf0670cfbc950fe066ee2c6955c6
+zhanglihuan
+1598636235
+update invitation
+ 10 files changed, 177 insertions(+), 81 deletions(-)
+
+96e4a922efb652c6a4057e2a3385c5958116c761
+jinxinh
+1598613041
+Added year option to get multiple teams
+ 1 file changed, 44 insertions(+), 23 deletions(-)
+
+2167775f32b53a80b0f25f72e2a9812cb0477bb2
+jinxinh
+1598610814
+Corrected url format; Added comments above each function with Method, Url, Params, and Request; Finished multi_get_team api Signed-off-by: jinxinh <jinxinh@student.unimelb.edu.au>
+ 3 files changed, 145 insertions(+), 103 deletions(-)
+
+c960d59fcc9802fd66735cfda777cdc8069cfe00
+jinxinh
+1598520979
+Refined urls for team apis; Finished apis: get_team, multi_get_team(2/3), assigned_supervisor, create_team(TBD), get_team_members
+ 2 files changed, 216 insertions(+), 80 deletions(-)
+
+d183dfaeddcb9954a688e3dfe5ea248d54d639ca
+jinxinh
+1598476649
+Restructured team apis with team_router; Add apis required like assigning secondary_supervisor and get_team_members through supervisor_id
+ 11 files changed, 361 insertions(+), 19 deletions(-)
+
+d64512ba1f1f394bfa9982c99fe6b83f28b45838
+Xinbo Sun
+1598294992
+apis done but authentication PENDING
+ 27 files changed, 634 insertions(+), 3 deletions(-)
+
+98ac5e27df2968daeae65a694164c04e97c72131
+Zachary Ho
+1598186134
+Finished first set of Confluence APIs. Currently using hard-coded credentials to access Confluence.
+ 3 files changed, 194 insertions(+), 144 deletions(-)
+
+59cbd6fb66c95a52e65d6cfd9af94ca4e3936f61
+Zachary Ho
+1598181639
+added pipfile to .gitignore. Updated err_code to code and err_msg to msg for API responses
+ 2 files changed, 13 insertions(+), 6 deletions(-)
+
+0a0056fe993b7461b57d40d3ab7d401fa47f033c
+Zachary Ho
+1597997369
+Added a few more functions for Confluence APIs
+ 1 file changed, 94 insertions(+), 9 deletions(-)
+
+d9834da81d7f99249175d556a2e3e16ab45a9ffe
+jinxinh
+1597957087
+Signed-off-by: jinxinh <jinxinh@student.unimelb.edu.au> Update urls for team views; Fix inconsistency between csvRead and Team model; Update create_team api; Refine csv_file template;
+ 6 files changed, 68 insertions(+), 66 deletions(-)
+
+ab675462a443d9ab678f47132372bc1548d41fdf
+Zachary Ho
+1597926028
+wrote getSpace for Confluence API. Currently hardcoding url, username and pw for now
+ 3 files changed, 69 insertions(+)
+
+165ff86423bd5e0d78a3c7e91900b5a4fd123768
+Zachary Ho
+1597922308
+Added atlassian-python-api as a requirement
+ 1 file changed, 1 insertion(+)
+
+0933363d77497b049a3ab59bd75644e918d8af3d
+Zachary Ho
+1597921669
+Created new folder structure for Confluence and JIRA apis
+ 5 files changed, 0 insertions(+), 0 deletions(-)
+
+950fcaf7ddc30aad3aa450974da4d4e106cbbda7
+kairou
+1597575928
+add unittest tutorial
+ 8 files changed, 1175 insertions(+)
+
+efed1e184e0537ff8c0e13990400b7be726d1e2d
+zhanglihuan
+1597285277
+fixbug
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+031a4c97082f5a96591a975e30e437375e37fca2
+zhanglihuan
+1597284886
+fixbug
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+a1bd0375096def137752ce678a1cbe04a1ed713d
+zhanglihuan
+1597221029
+fixbug
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+165e3432fec823fae294da68473c3d0db812bdcb
+zhanglihuan
+1597220947
+fixbug
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+4780acb501106cc80919f42cf14eee06bac2b8e3
+zhanglihuan
+1597220450
+update requirements
+ 2 files changed, 8 insertions(+), 4 deletions(-)
+
+f92f4af1304c77db757003315b92a60db64c168d
+zhanglihuan
+1597207051
+update requirements
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+e9cf5c543db0a3c0967df57452e0fdf7783e0a2e
+zhanglihuan
+1597206596
+reconstrcut
+ 2 files changed, 25 insertions(+), 7 deletions(-)
+
+85438d3d49bb6cc787c5b33448e150615c199977
+zhanglihuan
+1597205820
+reconstrcut
+ 7 files changed, 195 insertions(+), 81 deletions(-)
+
+ad81dd3f2848f986d536199e95641201223e856c
+zhanglihuan
+1597122615
+fix setting
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+faa5f6e5bc5a467d670cfe4a526e17a395bde7c2
+Zachary Ho
+1596946797
+Updated csv template following 'Team' model
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+25c30068a5e90996aca511ae859c642b06af90af
+zhanglihuan
+1591792503
+connect mysql
+ 3 files changed, 4 insertions(+), 3 deletions(-)
+
+c6357ee2ba3982799569b4a56fb03ab05f3470b5
+zhanglihuan
+1591790100
+connect mysql
+ 6 files changed, 13 insertions(+), 8 deletions(-)
+
+de45bd3c69838c874c79ad93b538a2304438522c
+zhanglihuan
+1591784207
+fix bug
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+0a2867b44902ff62e3163d57e755d5eb165b4107
+zhanglihuan
+1591783606
+delete migrations
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+45d1097699494ba0f229b8449c398539c0e49828
+zhanglihuan
+1591783509
+set enviorment to prod
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+29a5406a246b87d00226030303a870cc2b6c441b
+zhanglihuan
+1591782710
+fix bug of response
+ 15 files changed, 423 insertions(+), 204 deletions(-)
+
+19858e54736719f7d736dbc29280bb295c856e6a
+Procyon
+1591712554
+add create team, team member relation,get team apis
+ 7 files changed, 148 insertions(+), 1 deletion(-)
+
+03d816478e72504d3c98cd55caef32e9049cc7f0
+zhanglihuan
+1591680124
+add dockerfile
+ 1 file changed, 22 insertions(+)
+
+0bd96e1bfcc6373e5ab1fb2bdf5355b00ae50bbc
+Xinbo Sun
+1591674814
+readCSV
+ 2 files changed, 33 insertions(+)
+
+68034409a8c8e0d437bf6fa09942b066868928d3
+zhanglihuan
+1591619312
+fix subject
+ 5 files changed, 207 insertions(+), 87 deletions(-)
+
+7640353f981e00a6c1e42eabd90a82a749e6c127
+Zachary Ho
+1591595536
+minor typo
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+9775850dec70fe2a996f241b4982da1fa1561f14
+Zachary Ho
+1591595496
+amended csv template column names to fit team model
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+c7e858e69834e12e195fcdb17d0b2171d4fe04b1
+Zachary Ho
+1591595256
+updated csv column names
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+7ce11ece623498e919c6338ffa38abceb6162dce
+Zachary Ho
+1591449967
+made a csv template for importing team data
+ 1 file changed, 3 insertions(+)
+
+d3ce1e3125767777c4d2ad489418c7cb2d4df26c
+zhanglihuan
+1591413029
+fix the code in previous commit
+ 11 files changed, 344 insertions(+), 210 deletions(-)
+
+fc78585bccd12a24e48133f4726d30d63c9e47be
+Procyon
+1591325590
+slightly change the database
+ 2 files changed, 24 insertions(+), 21 deletions(-)
+
+ef6de2ac5f441985fd58e72c660ca0d45e0052cd
+Xinbo Sun
+1591243806
+tested in postman
+ 3 files changed, 97 insertions(+), 2 deletions(-)
+
+41d921e25b2e6cef1fc340f60cbad497b722ea59
+Procyon
+1590866470
+modify model and views
+ 1 file changed, 3 deletions(-)
+
+a4ab0e7c8ddb58f4718a80a9d05a765d4ff26de0
+Procyon
+1590865479
+update the model and the view
+ 6 files changed, 83 insertions(+), 52 deletions(-)
+
+ebb0330413963719a6b141c3e9d22f574c3a72b9
+Procyon
+1590746286
+account apis restructure
+ 10 files changed, 23 insertions(+), 37 deletions(-)
+
+f3c155c6dc45023c14f979e07b25199f6ef657ce
+Likwun Cheung
+1590561907
+Revert "All acount apis, invite_accept still WIP"
+ 9 files changed, 263 deletions(-)
+
+43493516739e72d5d45d6c59f6e81336f59fa497
+Procyon
+1590555208
+All acount apis, invite_accept still WIP
+ 9 files changed, 257 insertions(+), 5 deletions(-)
+
+98671296087b693551d828fc417f6a4ab71dfa86
+zhanglihuan
+1590401811
+add invitation
+ 1 file changed, 11 insertions(+), 11 deletions(-)
+
+4bf48092a5f3594349901416bd2117f565858cc6
+zhanglihuan
+1590401729
+add invitation
+ 19 files changed, 252 insertions(+), 18 deletions(-)
+
+fe4ce5cf826733f808af03e22076de8986918c02
+zhanglihuan
+1589090395
+init project
+ 8 files changed, 200 insertions(+)
+
+f32442ac596e3129efb1d1cd4cf59c2a39fc10c5
+Likwun Cheung
+1588578345
+Initial commit
+ 2 files changed, 130 insertions(+)

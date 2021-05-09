@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from collections import defaultdict
-import logging, time
-
+import logging
 from django.views.decorators.http import require_http_methods
 from TeamSPBackend.git.views import update_individual_commits
 from TeamSPBackend.common.github_util import get_commits, get_pull_request
@@ -47,7 +46,6 @@ def get_git_commits(request, space_key):
     # Case 1: if git_commit table contains this space_key, get it directly from db
     data = []
     if GitCommitCounts.objects.filter(space_key=space_key).exists():
-        # print(GitCommitCounts.objects.get(space_key=space_key))
         for i in GitCommitCounts.objects.filter(space_key=space_key):
             tmp = {
                 "commit_count": str(i.commit_counts),
