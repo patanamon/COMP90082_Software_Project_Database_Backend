@@ -1,15 +1,8 @@
-from django.shortcuts import render
-from .models import MeetingMinutes
-from django.http import HttpResponse
-import json
 import urllib3
-
 from ..api.views.confluence.confluence import log_into_confluence
-from TeamSPBackend.confluence.models import PageHistory
+from TeamSPBackend.confluence.models import PageHistory, UserList, IndividualConfluenceContribution, MeetingMinutes
 from datetime import datetime
 import time
-
-from TeamSPBackend.confluence.models import UserList
 from TeamSPBackend.common import utils
 from TeamSPBackend.api.views.confluence import confluence
 from TeamSPBackend.coordinator.models import Coordinator
@@ -18,9 +11,7 @@ from django.db import transaction
 
 
 def update_space_user_list(coordinator_id, space_key):
-    coordinator = Coordinator.objects.get(id=coordinator_id)
-    atl_username = coordinator.atl_username
-    atl_password = coordinator.atl_password
+    atl_username, atl_password = get_atl_credentials(coordinator_id)
     conf = confluence.log_into_confluence(atl_username, atl_password)
     user_list = []
     user_set = {atl_username, }
@@ -72,9 +63,6 @@ def get_user(user, space_key):
                  space_key=space_key)
     return u
 
-
-utils.start_schedule(update_user_list, 60 * 60 * 24)  # update user list on a daily basis
-            
 
 def update_meeting_minutes():
     """
@@ -129,9 +117,6 @@ def update_meeting_minutes():
                                               space_key=project.space_key)
                         meet.save()
 
-utils.start_schedule(update_meeting_minutes, 60 * 60 * 24)  # update user list on a daily basis
-
-
 
 def update_page_history():
     history_data = []
@@ -178,6 +163,70 @@ def update_page_history():
         PageHistory.objects.bulk_create(history_data)
 
 
+def update_space_page_contribution(coordinator_id, space_key):
+    """
+    update the individual contributions of confluence pages in a specific space
+    """
+    atl_username, atl_password = get_atl_credentials(coordinator_id)
+    conf = confluence.log_into_confluence(atl_username, atl_password)
+    limit = 100
+    contents = conf.get_space_content(space_key=space_key, content_type="page", limit=limit,
+                                      expand="history.contributors.publishers.users")
+    results = contents["results"]
+    # while there exists incoming results, keep getting space contents
+    while contents["size"] == contents["limit"]:
+        contents = conf.get_space_content(space_key=space_key, start=len(results), limit=limit,
+                                          content_type="page", expand="history.contributors.publishers.users")
+        results.extend(contents["results"])
+
+    member_contributions = {}
+    # Loop through every page and store in a dictionary {"page": set of members}
+    for page in results:
+        page_contributors = page["history"]["contributors"]["publishers"]["users"]
+        for user in page_contributors:
+            if not user["displayName"] in member_contributions:
+                member_contributions[user["displayName"]] = 0
+            member_contributions[user["displayName"]] += 1
+
+    page_contribution = []
+    for user_name in member_contributions:
+        page_count = member_contributions[user_name]
+        page_contribution.append(IndividualConfluenceContribution(
+            space_key=space_key,
+            user_name=user_name,
+            page_count=page_count
+        ))
+
+    return page_contribution
+
+
+def insert_space_page_contribution(coordinator_id, space_key):
+    page_contribution = update_space_page_contribution(coordinator_id, space_key)
+    IndividualConfluenceContribution.objects.bulk_create(page_contribution)
+
+
+def update_page_contribution():
+    page_contribution = []
+    for space in ProjectCoordinatorRelation.objects.all():
+        coordinator_id = space.coordinator_id
+        space_key = space.space_key
+        page_contribution.extend(update_space_page_contribution(coordinator_id, space_key))
+
+    with transaction.atomic():
+        IndividualConfluenceContribution.objects.all().delete()
+        IndividualConfluenceContribution.objects.bulk_create(page_contribution)
+
+
+def get_atl_credentials(coordinator_id):
+    coordinator = Coordinator.objects.get(id=coordinator_id)
+    atl_username = coordinator.atl_username
+    atl_password = coordinator.atl_password
+    return atl_username, atl_password
+
+
+utils.start_schedule(update_user_list, 60 * 60 * 24)  # update user list on a daily basis
+utils.start_schedule(update_meeting_minutes, 60 * 60 * 24)  # update meeting minutes on a daily basis
 utils.start_schedule(update_page_history, 60 * 60 * 24)
+utils.start_schedule(update_page_contribution, 60 * 60 * 24)
 
 
