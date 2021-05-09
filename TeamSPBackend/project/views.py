@@ -9,8 +9,6 @@ from django.http.response import HttpResponse, HttpResponseRedirect, HttpRespons
 from TeamSPBackend.common.utils import make_json_response, init_http_response, check_user_login, check_body, \
     body_extract, mills_timestamp
 from TeamSPBackend.api.dto.dto import ProjectDTO
-from TeamSPBackend.project.views import import_projects_into_coordinator
-
 
 
 def import_projects_into_coordinator(coordinator, project_list):
