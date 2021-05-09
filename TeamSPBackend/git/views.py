@@ -37,13 +37,15 @@ def update_individual_commits():
         CommitCount = defaultdict(lambda: 0)
         for commit in commits:
             CommitCount[commit['author']] += 1
+
         for key, value in CommitCount.items():
-            if StudentCommitCounts.objects.filter(student_name=key).exists():
-                user = StudentCommitCounts.objects.get(student_name=key)
-                if value != user.commit_counts:
-                    StudentCommitCounts.objects.filter(student_name=key).update(commit_counts=value)
+
+            if StudentCommitCounts.objects.filter(student_name=str(key)).exists():
+                user = StudentCommitCounts.objects.get(student_name=str(key))
+                if str(value) != user.commit_counts:
+                    StudentCommitCounts.objects.filter(student_name=str(key)).update(commit_counts=str(value))
             else:
-                user = StudentCommitCounts(student_name=key, commit_counts=value, space_key=relation.space_key)
+                user = StudentCommitCounts(student_name=str(key), commit_counts=str(value), space_key=relation.space_key)
                 user.save()
 
 
