@@ -405,31 +405,40 @@ def auto_get_ticket_count_team_timestamped(request):
 
 @require_http_methods(['POST'])
 def setGithubJiraUrl(request,team):
-
-    data = request.POST
-    git_url = data['git_url']
-    jira_url = data['jira_url']
-
     try:
-        existRecord = Urlconfig.objects.get(space_key=team)
-        existRecord.git_url=git_url
-        existRecord.jira_url=jira_url
-        existRecord.save()
-    except ObjectDoesNotExist:
-        # team = 'swen90013-2020-sp'
-        jira_obj = Urlconfig(space_key=team,git_url=git_url,jira_url = jira_url)
-        jira_obj.save()
+        data = request.POST
+        git_url = data['git_url']
+        jira_url = data['jira_url']
+        git_username = data['git_username']
+        git_password = data['git_password']
+
+        try:
+            existRecord = Urlconfig.objects.get(git_username=git_username,space_key=team)
+            existRecord.git_url=git_url
+            existRecord.jira_url=jira_url
+            existRecord.git_username = git_username
+            existRecord.git_password = git_password
+            existRecord.save()
+        except ObjectDoesNotExist:
+            # team = 'swen90013-2020-sp'
+            jira_obj = Urlconfig(space_key=team,git_url=git_url,jira_url = jira_url,git_username=git_username,git_password=git_password)
+            jira_obj.save()
 
 
-    resp = init_http_response(
-         RespCode.success.value.key, RespCode.success.value.msg)
-    # resp['data'] = data
-    return HttpResponse(json.dumps(resp), content_type="application/json")
+        resp = init_http_response(
+             RespCode.success.value.key, RespCode.success.value.msg)
+        resp['data'] = 'success'
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+    except:
+        resp = {'code': -1, 'msg': 'error'}
+        return HttpResponse(json.dumps(resp), content_type="application/json")
 
-@require_http_methods(['GET'])
+@require_http_methods(['POST'])
 def get_url_from_db(request,team):
     try:
-        allExistRecord=list(Urlconfig.objects.filter(space_key=team).values('git_url','jira_url'))
+        data = request.POST
+        git_username = data['git_username']
+        allExistRecord=list(Urlconfig.objects.filter(git_username=git_username,space_key=team).values('git_url','jira_url'))
 
         resp = init_http_response(
             RespCode.success.value.key, RespCode.success.value.msg)
@@ -438,6 +447,7 @@ def get_url_from_db(request,team):
     except:
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
+
 
 # Legacy APIs, not working
 
