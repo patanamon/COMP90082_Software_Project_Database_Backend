@@ -121,3 +121,23 @@ def get_git_pr(request, body, *args, **kwargs):
     )
     resp = init_http_response_my_enum(RespCode.success, data)
     return make_json_response(resp=resp)
+
+
+@require_http_methods(['GET'])
+def get_git_metrics(request, space_key):
+    # Case 1: if git_metrics table contains this space_key, get it directly from db
+    data = []
+    tmp = {
+        "space_key" : 'abc',
+        "file_count" : 10,
+        "class_count" : 10,
+        "function_count" : 10,
+        "code_lines_count" : 10,
+        "comment_lines_count" : 3,
+        "comment_to_code_ratio" : 0.3,
+        "declarative_lines_count" : 10,
+        "executable_lines_count" : 10
+    }
+    data.append(tmp)
+    resp = init_http_response_my_enum(RespCode.success, data)
+    return make_json_response(resp=resp)

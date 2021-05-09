@@ -11,7 +11,7 @@ from .views.subject import subject_router, update_subject, delete_subject
 from .views.team import team_router, get_team_members, team_member_configure, team_configure
 from .views.slack import get_team_data, get_all_member_data, get_member_data
 from TeamSPBackend.api.views.project.project import import_project_in_batch
-from .views.git import get_git_commits, get_git_pr, get_git_individual_commits
+from .views.git import get_git_commits, get_git_pr, get_git_individual_commits, get_git_metrics
 
 
 urlpatterns = [
@@ -51,6 +51,7 @@ urlpatterns = [
     path('git/commit/<space_key>', get_git_commits),
     path('git/individual_commits/<space_key>', get_git_individual_commits),
     path('git/pullrequest', get_git_pr),
+    path('git/metrics/<space_key>', get_git_metrics),
 
     # Confluence Related API
     # path('confluence/spaces/<space_key>', confluence.get_space),
