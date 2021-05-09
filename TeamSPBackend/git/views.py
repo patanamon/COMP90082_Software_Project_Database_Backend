@@ -42,4 +42,4 @@ def update_individual_commits():
                 user.save()
 
 
-utils.start_schedule(update_individual_commits, 60 * 60 * 24)
+#utils.start_schedule(update_individual_commits, 60 * 60 * 24)
