@@ -1,13 +1,7 @@
-from atlassian import Confluence
 import yaml
 import json
-import requests
-from requests.auth import HTTPBasicAuth
 from django.http.response import HttpResponse
 from django.views.decorators.http import require_http_methods
-from urllib.error import HTTPError
-
-from TeamSPBackend.api.views.confluence import confluence
 from TeamSPBackend.common.utils import init_http_response, make_json_response
 from TeamSPBackend.common.choices import RespCode
 from TeamSPBackend.confluence.models import IndividualConfluenceContribution
@@ -26,7 +20,7 @@ def get_all_page_contributions(request, space_key):
         for contribution in IndividualConfluenceContribution.objects.filter(space_key=space_key):
             pair = {
                 "student": contribution.user_name,
-                "page_count": confluence.page_count
+                "page_count": contribution.page_count
             }
             data.append(pair)
 
