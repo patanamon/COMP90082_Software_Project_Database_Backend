@@ -31,3 +31,12 @@ class PageHistory(models.Model):
 
     class Meta:
         db_table = 'page_history'
+
+
+class IndividualConfluenceContribution(models.Model):
+    space_key = models.CharField(max_length=256)
+    user_name = models.CharField(max_length=256)
+    page_count = models.IntegerField()
+
+    class Meta:
+        db_table = 'individual_confluence_contribution'
