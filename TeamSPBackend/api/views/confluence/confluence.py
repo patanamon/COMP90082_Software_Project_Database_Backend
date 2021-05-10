@@ -7,7 +7,7 @@ from TeamSPBackend.common.choices import RespCode
 from django.views.decorators.http import require_http_methods
 from django.http.response import HttpResponse, HttpResponseRedirect, HttpResponseNotAllowed, HttpResponseBadRequest
 from TeamSPBackend.common.utils import make_json_response, init_http_response, check_user_login, check_body, \
-    body_extract, mills_timestamp
+    body_extract, mills_timestamp, logger
 from TeamSPBackend.confluence.models import UserList
 from TeamSPBackend.confluence.models import MeetingMinutes
 
@@ -411,7 +411,12 @@ def get_imported_project(request):
     # user = request.session.get('user')
     # username = user['atl_username']
     # password = user['atl_password']
-
+    ip = ""
+    if request.META.get('HTTP_X_FORWARDED_FOR'):
+        ip = request.META.get("HTTP_X_FORWARDED_FOR")
+    else:
+        ip = request.META.get("REMOTE_ADDR")
+    logger.info("Get imported projects ip : {}".format(ip))
     coordinator_id = 1   # it is a hard code, needs to change in the future
 
     # another way to get username and password
