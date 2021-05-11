@@ -70,7 +70,7 @@ urlpatterns = [
     path('confluence/<space_key>/meeting_minutes', confluence.get_meeting_minutes),
 
     path('confluence/imported_projects', confluence.get_imported_project),
-
+    path('confluence/delete', confluence.delete_project),
     path('confluence/spaces/<space_key>/page_count', confluence.get_page_count_by_time),
 
 
