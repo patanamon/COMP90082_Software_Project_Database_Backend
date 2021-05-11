@@ -24,7 +24,7 @@ class GitCommitCounts(models.Model):
     class Meta:
         db_table = 'git_commit_counts'
 
-class Git_Metrics(models.Model):
+class GitMetrics(models.Model):
     space_key = models.CharField(max_length=256, null=False)
     file_count = models.IntegerField(null=False)
     class_count = models.IntegerField(null=False)

@@ -4,7 +4,6 @@ import os
 import logging
 import re
 import git
-from git import *
 
 from TeamSPBackend.settings.base_setting import BASE_DIR
 
@@ -182,7 +181,7 @@ def get_git_clone(git_url):
             remote = repo.remote()
             remote.pull()
             logger.info('[GIT UPDATE Repo] {} has existed in [Path] : {}'.format(git_url, git_repo_path))
-        except NoSuchPathError as e:
+        except git.NoSuchPathError as e:
             logger.info('NoSuchPathError When [GIT UPDATE Repo] {} has existed in [Path] : {}'.format(git_url, git_repo_path))
-        except InvalidGitRepositoryError as e:
+        except git.InvalidGitRepositoryError as e:
             logger.info('Invalid Git Repository Error When [GIT UPDATE Repo] {} has existed in [Path] : {}'.format(git_url, git_repo_path))
