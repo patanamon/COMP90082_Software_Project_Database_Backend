@@ -4,20 +4,29 @@
 # TODO: Specify except statement to avoid accidental termination
 # TODO: django app integration
 # TODO: charts output
-
+from django.apps import AppConfig
 from atlassian import Jira
 import json
 import time
+import datetime
 
 from django.views.decorators.http import require_http_methods
 from django.http.response import HttpResponse
-
+from django.core.exceptions import ObjectDoesNotExist
 # for file op
 import os
 import time
+from dateutil import parser
 
 from TeamSPBackend.common.choices import RespCode
 from TeamSPBackend.common.utils import init_http_response
+from TeamSPBackend.common.utils import start_schedule
+from TeamSPBackend.api.views.jira.models import JiraCountByTime
+from TeamSPBackend.api.views.jira.models import IndividualContributions
+from TeamSPBackend.api.views.jira.models import Urlconfig
+from TeamSPBackend.project.models import ProjectCoordinatorRelation
+from TeamSPBackend.coordinator.models import Coordinator
+from TeamSPBackend.api.config import atl_username,atl_password
 
 
 # helper functions
@@ -28,10 +37,11 @@ def session_interpreter(request):
     password = user['atl_password']
     return username, password
 
-
 def jira_login(request):
     """ Handles Jira login"""
-    username, password = session_interpreter(request)
+    # username, password = session_interpreter(request)
+    username = atl_username
+    password = atl_password
     jira = Jira(
         url='https://jira.cis.unimelb.edu.au:8444',
         username=username,
@@ -246,9 +256,10 @@ def get_issues_per_sprint(request, team):
 # New APIs
 @require_http_methods(['GET'])
 def get_ticket_count_team_timestamped(request, team):
-    """ Return a HttpResponse, data contains 3 kinds of issues timestamped with unix time of each day"""
-    try:
+     """ Return a HttpResponse, data contains 3 kinds of issues timestamped with unix time of each day"""
+     try:
         jira = jira_login(request)
+
         jquery = jira.jql('project = ' + team + ' ORDER BY created ASC')['issues'][0]['fields']['created']
 
         # parses to datetime object
@@ -274,14 +285,17 @@ def get_ticket_count_team_timestamped(request, team):
                 'done': done
             })
 
+            jira_obj = JiraCountByTime(space_key=team, count_time=time.strftime('%Y-%m-%d', time.localtime(int((to_unix_time(day))))), todo=todo,
+                                       in_progress=in_progress, done=done)
+            jira_obj.save()
+
         resp = init_http_response(
             RespCode.success.value.key, RespCode.success.value.msg)
         resp['data'] = data
         return HttpResponse(json.dumps(resp), content_type="application/json")
-    except:
+     except:
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
-
 
 @require_http_methods(['GET'])
 def get_contributions(request, team):
@@ -295,6 +309,7 @@ def get_contributions(request, team):
     """
     try:
         jira = jira_login(request)
+
         students, names = get_member_names(get_project_key(team, jira), jira)
         count = []
         for student in students:
@@ -308,10 +323,141 @@ def get_contributions(request, team):
                 'student': name,
                 'done_count': count
             })
+            jira_obj = IndividualContributions(space_key=team,student=name, done_count=count)
+            jira_obj.save()
 
         resp = init_http_response(
             RespCode.success.value.key, RespCode.success.value.msg)
         resp['data'] = data
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+    except:
+        resp = {'code': -1, 'msg': 'error'}
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+
+
+@require_http_methods(['GET'])
+def get_contributions_from_db(request,team):
+    try:
+
+        allExistRecord=list(IndividualContributions.objects.filter(space_key=team).values('student','done_count'))
+
+        resp = init_http_response(
+            RespCode.success.value.key, RespCode.success.value.msg)
+        resp['data'] = allExistRecord
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+    except:
+        resp = {'code': -1, 'msg': 'error'}
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+
+
+@require_http_methods(['GET'])
+def get_ticket_count_team_timestamped_afterthefirstrun(request, team):
+    """ Return a HttpResponse, data contains 3 kinds of issues timestamped with unix time"""
+    try:
+        jira = jira_login(request)
+
+        todo = jira.jql('project = ' + team + ' AND status = "To Do"')['total']
+        in_progress = jira.jql('project = ' + team + ' AND status = "In Progress"')['total']
+        done = jira.jql('project = ' + team + ' AND status = "Done"')['total']
+        data = {
+            'time': time.strftime('%Y-%m-%d', time.localtime(to_unix_time(datetime.date.today()))),
+            'to_do': todo,
+            'in_progress': in_progress,
+            'done': done,
+        }
+
+        jira_obj = JiraCountByTime(space_key=team,count_time=data['time'], todo=data['to_do'], in_progress=data['in_progress'], done=data['done'])
+        jira_obj.save()
+
+        resp = init_http_response(
+            RespCode.success.value.key, RespCode.success.value.msg)
+        resp['data'] = data
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+    except:
+        resp = {'code': -1, 'msg': 'error'}
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+
+
+@require_http_methods(['GET'])
+def get_ticket_count_team_timestamped_from_db(request,team):
+    try:
+        allExistRecord=list(JiraCountByTime.objects.filter(space_key=team).values('count_time','todo','in_progress','done'))
+
+        resp = init_http_response(
+            RespCode.success.value.key, RespCode.success.value.msg)
+        resp['data'] = allExistRecord
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+    except:
+        resp = {'code': -1, 'msg': 'error'}
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+
+
+@require_http_methods(['GET'])
+def auto_get_ticket_count_team_timestamped(request):
+     jira = jira_login(request)
+     allProjects = jira.projects()
+     for p in allProjects:
+        # first run, fetch all the records from the date the project is created
+        get_ticket_count_team_timestamped(request, p['name'])
+
+     time.sleep(60 * 60 * 24)
+     for p in allProjects:
+        start_schedule(get_ticket_count_team_timestamped_afterthefirstrun, 60 * 60 * 24, request, p['name'])
+
+     resp = 'success!'
+     return HttpResponse(resp, content_type="application/json")
+
+
+@require_http_methods(['POST'])
+def setGithubJiraUrl(request,team):
+     try:
+        atl_user = '1'
+        atl_pass = '1'
+        coordinator_id = '4'
+        coordinator_name = '4'
+        data = request.POST
+        git_url = data['git_url']
+        jira_url = data['jira_url']
+        git_username = data['git_username']
+        git_password = data['git_password']
+
+        try:
+            existURLRecord = ProjectCoordinatorRelation.objects.get(coordinator_id=coordinator_id,space_key=team)
+            existURLRecord.git_url=git_url
+            existURLRecord.jira_project=jira_url
+            existURLRecord.save()
+        except ObjectDoesNotExist:
+            # team = 'swen90013-2020-sp'
+            jira_obj1 = ProjectCoordinatorRelation(coordinator_id = coordinator_id,space_key=team,git_url=git_url,jira_project = jira_url)
+            jira_obj1.save()
+        try:
+            existCoordinatorRecord = Coordinator.objects.get(coordinator_name=coordinator_name)
+            existCoordinatorRecord.git_username = git_username
+            existCoordinatorRecord.git_password = git_password
+            existCoordinatorRecord.save()
+        except ObjectDoesNotExist:
+            jira_obj2 = Coordinator(coordinator_name=coordinator_name,git_username=git_username,git_password=git_password,atl_username = atl_user,atl_password=atl_pass)
+            jira_obj2.save()
+
+
+        resp = init_http_response(
+             RespCode.success.value.key, RespCode.success.value.msg)
+        resp['data'] = 'success'
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+     except:
+        resp = {'code': -1, 'msg': 'error'}
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+
+@require_http_methods(['POST'])
+def get_url_from_db(request,team):
+    try:
+        data = request.POST
+        coordinator_id = data['coordinator_id']
+        allExistRecord=list(ProjectCoordinatorRelation.objects.filter(coordinator_id=coordinator_id,space_key=team).values('git_url','jira_project'))
+
+        resp = init_http_response(
+            RespCode.success.value.key, RespCode.success.value.msg)
+        resp['data'] = allExistRecord
         return HttpResponse(json.dumps(resp), content_type="application/json")
     except:
         resp = {'code': -1, 'msg': 'error'}

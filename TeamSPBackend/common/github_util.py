@@ -6,6 +6,7 @@ import re
 import git
 
 from TeamSPBackend.settings.base_setting import BASE_DIR
+from TeamSPBackend.coordinator.models import Coordinator
 
 logger = logging.getLogger('django')
 
@@ -22,6 +23,13 @@ GIT_LOG_AUTHOR = ' --author={}'
 GIT_LOG_AFTER = ' --after={}'
 GIT_LOG_BEFORE = ' --before={}'
 GIT_LOG_PATH = ' --> {}'
+
+
+def construct_certification(repo):
+    coordinator_data = Coordinator.objects.all()[0]
+    username = coordinator_data.git_username
+    password = coordinator_data.git_password
+    return repo[0:8]+username+':'+password+'@'+repo[8:]
 
 
 def init_git():
@@ -51,6 +59,7 @@ def process_changed(changed):
 
 
 def pull_repo(repo):
+    repo = construct_certification(repo)
     path = REPO_PATH + convert(repo)
     if check_path_exist(path):
         git_update = GIT_UPDATE_COMMAND.format(path)
@@ -67,6 +76,7 @@ def pull_repo(repo):
 def get_commits(repo, author=None, branch=None, after=None, before=None):
     pull_repo(repo)
 
+    repo = construct_certification(repo)
     repo_path = REPO_PATH + convert(repo)
     path = COMMIT_DIR + '/' + convert(repo) + '.log'
 
