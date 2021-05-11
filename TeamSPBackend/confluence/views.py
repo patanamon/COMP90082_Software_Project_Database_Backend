@@ -61,7 +61,7 @@ def update_user_list():
 
 def get_user(user, space_key, session):
     picture_path = "profile_picture/"
-    host = "18.167.74.23:18000"
+    host = "http://18.167.74.23:18000"
     if user["profilePicture"]["path"].endswith("default.svg"):
         picture_path += "default.svg"
     else:
