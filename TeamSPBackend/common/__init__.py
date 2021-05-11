@@ -17,6 +17,6 @@ from .github_util import init_git
 
 init_git()
 
-init_smtp()
-smtp_thread = SendEmailPool(0)
-smtp_thread.start()
+# init_smtp()
+# smtp_thread = SendEmailPool(0)
+# smtp_thread.start()
