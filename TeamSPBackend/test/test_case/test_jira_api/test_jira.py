@@ -64,8 +64,9 @@ class JiraTestCases(TestCase):
         self.assertEqual(response.json()["code"], RespCode.success.value.key, "response is not success")
 
     def test_get_url_from_db_success(self):
-        team = "swen90013-2020-sp"
-        response = self.client.get('/api/v1/jira/' + team + '/get_url_db')
+        coordinator_id = '4'
+        space_key = 'sk'
+        response = self.client.get('/api/v1/git/get_url_db')
         # print(response.json()["data"])
         self.assertEqual(response.json()["code"], RespCode.success.value.key, "response is not success")
 
