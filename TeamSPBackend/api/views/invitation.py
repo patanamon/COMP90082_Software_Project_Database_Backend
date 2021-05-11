@@ -7,7 +7,7 @@ from django.http.response import HttpResponseNotAllowed
 from django.views.decorators.http import require_http_methods
 from django.db import transaction
 
-from TeamSPBackend.common import smtp_thread
+# from TeamSPBackend.common import smtp_thread
 from TeamSPBackend.common.utils import make_json_response, init_http_response_my_enum, check_user_login, check_body, body_extract, mills_timestamp, get_invitation_link
 from TeamSPBackend.common.choices import InvitationStatus, RespCode, InvitationRespCode, Status, get_message, Roles
 from TeamSPBackend.common.config import SINGLE_PAGE_LIMIT, PATTERN_COORDINATOR, PATTERN_URL
