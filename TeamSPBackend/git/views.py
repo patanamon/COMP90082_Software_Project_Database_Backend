@@ -35,11 +35,11 @@ def update_individual_commits():
         for key, value in CommitCount.items():
             if StudentCommitCounts.objects.filter(student_name=key).exists():
                 user = StudentCommitCounts.objects.get(student_name=key)
-                if value != user.commit_count:
+                if value != user.commit_counts:
                     StudentCommitCounts.objects.filter(student_name=key).update(commit_counts=value)
             else:
                 user = StudentCommitCounts(student_name=key, commit_counts=value, space_key=relation.space_key)
                 user.save()
 
 
-utils.start_schedule(update_individual_commits, 60 * 60 * 24)
+#utils.start_schedule(update_individual_commits, 60 * 60 * 24)

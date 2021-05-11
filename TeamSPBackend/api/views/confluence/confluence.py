@@ -5,14 +5,12 @@ from requests.auth import HTTPBasicAuth
 
 from TeamSPBackend.common.choices import RespCode
 from django.views.decorators.http import require_http_methods
-from django.http.response import HttpResponse, HttpResponseRedirect, HttpResponseNotAllowed, HttpResponseBadRequest
-from TeamSPBackend.common.utils import make_json_response, init_http_response, check_user_login, check_body, \
-    body_extract, mills_timestamp
+from django.http.response import HttpResponse
+from TeamSPBackend.common.utils import init_http_response
 from TeamSPBackend.confluence.models import UserList
 from TeamSPBackend.confluence.models import MeetingMinutes
 
 from TeamSPBackend.project.models import ProjectCoordinatorRelation
-from TeamSPBackend.coordinator.models import Coordinator
 
 from TeamSPBackend.confluence.models import PageHistory
 from TeamSPBackend.coordinator.models import Coordinator
@@ -327,7 +325,7 @@ def get_user_list(request, space_key):
     Parameter: space_key
     """
     try:
-        data = []
+        user_list = []
         for user_info in UserList.objects.filter(space_key=space_key):
             user_detail = {
                 "name": user_info.user_name,
@@ -335,10 +333,11 @@ def get_user_list(request, space_key):
                 "email": user_info.email,
                 "picture": user_info.picture
             }
-            data.append(user_detail)
+            user_list.append(user_detail)
         resp = init_http_response(
             RespCode.success.value.key, RespCode.success.value.msg)
-        resp['data'] = data
+        resp['data'] = {"total": len(user_list),
+                        "user_list": user_list}
         return HttpResponse(json.dumps(resp), content_type="application/json")
     except:
         resp = {'code': -1, 'msg': 'error'}
@@ -398,6 +397,7 @@ def get_page_count_by_time(request, space_key):
     except:
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
+
 
 @require_http_methods(['GET'])
 def get_imported_project(request):
