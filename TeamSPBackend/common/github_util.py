@@ -3,7 +3,6 @@
 import os
 import logging
 import re
-import git
 
 from TeamSPBackend.settings.base_setting import BASE_DIR
 from TeamSPBackend.coordinator.models import Coordinator
@@ -176,22 +175,3 @@ def get_pull_request(repo, author=None, branch=None, after=None, before=None):
 #     pull_repo('https://github.com/LikwunCheung/TeamSPBackend')
 #     get_commits('https://github.com/LikwunCheung/TeamSPBackend')
 
-def get_git_clone(git_url):
-    git_url = 'https://github.com/Jerry-Shan/KT-blend-word-detection'
-    git_url_split = git_url.split('/')
-    # external path for storing github repos, format is 'base_dir/user_name/repo_name'
-    git_repo_path = BASE_DIR + '/' + git_url_split[-2] + '/' + git_url_split[-1]
-    if not check_path_exist(git_repo_path):
-        # clone repo from remote to local
-        git.Repo.clone_from(git_url, git_repo_path)
-        logger.info('[GIT CLONE Repo] {} to the [Path] : {}'.format(git_url, git_repo_path))
-    else:
-        try:
-            repo = git.Repo(git_repo_path)
-            remote = repo.remote()
-            remote.pull()
-            logger.info('[GIT UPDATE Repo] {} has existed in [Path] : {}'.format(git_url, git_repo_path))
-        except git.NoSuchPathError as e:
-            logger.info('NoSuchPathError When [GIT UPDATE Repo] {} has existed in [Path] : {}'.format(git_url, git_repo_path))
-        except git.InvalidGitRepositoryError as e:
-            logger.info('Invalid Git Repository Error When [GIT UPDATE Repo] {} has existed in [Path] : {}'.format(git_url, git_repo_path))

@@ -124,7 +124,13 @@ def get_git_pr(request, body, *args, **kwargs):
 
 @require_http_methods(['GET'])
 def get_git_metrics(request, space_key):
+
+    # todo: @jinzhe shan
     # Case 1: if git_metrics table contains this space_key, get it directly from db
+    # Case 2: if git_metrics table does not contain this space_key, get it using get_metrics()
+    # Case 3: if space_key is invalid, return None
+
+    # Case 0: mock data for front-end to do cooperative testing
     data = []
     tmp = {
         "space_key" : 'abc',
