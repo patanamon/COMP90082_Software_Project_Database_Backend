@@ -24,6 +24,10 @@ from TeamSPBackend.common.utils import start_schedule
 from TeamSPBackend.api.views.jira.models import JiraCountByTime
 from TeamSPBackend.api.views.jira.models import IndividualContributions
 from TeamSPBackend.api.views.jira.models import Urlconfig
+from TeamSPBackend.project.models import ProjectCoordinatorRelation
+from TeamSPBackend.coordinator.models import Coordinator
+from TeamSPBackend.api.config import atl_username,atl_password
+
 
 # helper functions
 def session_interpreter(request):
@@ -33,14 +37,15 @@ def session_interpreter(request):
     password = user['atl_password']
     return username, password
 
-
 def jira_login(request):
     """ Handles Jira login"""
-    username, password = session_interpreter(request)
+    # username, password = session_interpreter(request)
+    username = atl_username
+    password = atl_password
     jira = Jira(
         url='https://jira.cis.unimelb.edu.au:8444',
-        username='',
-        password='',
+        username=username,
+        password=password,
         verify_ssl=False
     )
     return jira
@@ -405,31 +410,50 @@ def auto_get_ticket_count_team_timestamped(request):
 
 @require_http_methods(['POST'])
 def setGithubJiraUrl(request,team):
+     try:
+        atl_user = '1'
+        atl_pass = '1'
+        coordinator_id = '4'
+        coordinator_name = '4'
+        data = request.POST
+        git_url = data['git_url']
+        jira_url = data['jira_url']
+        git_username = data['git_username']
+        git_password = data['git_password']
 
-    data = request.POST
-    git_url = data['git_url']
-    jira_url = data['jira_url']
+        try:
+            existURLRecord = ProjectCoordinatorRelation.objects.get(coordinator_id=coordinator_id,space_key=team)
+            existURLRecord.git_url=git_url
+            existURLRecord.jira_project=jira_url
+            existURLRecord.save()
+        except ObjectDoesNotExist:
+            # team = 'swen90013-2020-sp'
+            jira_obj1 = ProjectCoordinatorRelation(coordinator_id = coordinator_id,space_key=team,git_url=git_url,jira_project = jira_url)
+            jira_obj1.save()
+        try:
+            existCoordinatorRecord = Coordinator.objects.get(coordinator_name=coordinator_name)
+            existCoordinatorRecord.git_username = git_username
+            existCoordinatorRecord.git_password = git_password
+            existCoordinatorRecord.save()
+        except ObjectDoesNotExist:
+            jira_obj2 = Coordinator(coordinator_name=coordinator_name,git_username=git_username,git_password=git_password,atl_username = atl_user,atl_password=atl_pass)
+            jira_obj2.save()
 
-    try:
-        existRecord = Urlconfig.objects.get(space_key=team)
-        existRecord.git_url=git_url
-        existRecord.jira_url=jira_url
-        existRecord.save()
-    except ObjectDoesNotExist:
-        # team = 'swen90013-2020-sp'
-        jira_obj = Urlconfig(space_key=team,git_url=git_url,jira_url = jira_url)
-        jira_obj.save()
 
+        resp = init_http_response(
+             RespCode.success.value.key, RespCode.success.value.msg)
+        resp['data'] = 'success'
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+     except:
+        resp = {'code': -1, 'msg': 'error'}
+        return HttpResponse(json.dumps(resp), content_type="application/json")
 
-    resp = init_http_response(
-         RespCode.success.value.key, RespCode.success.value.msg)
-    # resp['data'] = data
-    return HttpResponse(json.dumps(resp), content_type="application/json")
-
-@require_http_methods(['GET'])
+@require_http_methods(['POST'])
 def get_url_from_db(request,team):
     try:
-        allExistRecord=list(Urlconfig.objects.filter(space_key=team).values('git_url','jira_url'))
+        data = request.POST
+        coordinator_id = data['coordinator_id']
+        allExistRecord=list(ProjectCoordinatorRelation.objects.filter(coordinator_id=coordinator_id,space_key=team).values('git_url','jira_project'))
 
         resp = init_http_response(
             RespCode.success.value.key, RespCode.success.value.msg)
@@ -438,6 +462,7 @@ def get_url_from_db(request,team):
     except:
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
+
 
 # Legacy APIs, not working
 

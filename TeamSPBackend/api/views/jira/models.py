@@ -30,6 +30,8 @@ class Urlconfig(models.Model):
     space_key = models.CharField(max_length=256, null=False)
     jira_url = models.CharField(max_length=256, null=False)
     git_url = models.CharField(max_length=256, null=False)
+    git_username = models.CharField(max_length=256, null=False)
+    git_password = models.CharField(max_length=256, null=False)
 
 
     class Meta:

@@ -92,7 +92,6 @@ urlpatterns = [
     path('jira/<team>/get_contribution_db', jira.get_contributions_from_db),
     path('jira/<team>/get_ticket_count_db', jira.get_ticket_count_team_timestamped_from_db),
 
-
     # legacy but not working
     #path('jira/<team>/jira_cfd', jira.get_jira_cfd),
     #path('jira/<team>/jiraburn', helpJira.get_jira_burn),
