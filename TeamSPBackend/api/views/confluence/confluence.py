@@ -437,3 +437,16 @@ def get_imported_project(request):
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
 
+
+@require_http_methods(['POST'])
+def delete_project(request, *args, **kwargs):
+    try:
+        space_key = json.loads(request.body)["space_key"]
+        # delete space key that is imported by the coordinator.
+        coordinator_id = request.session['coordinator_id']
+        ProjectCoordinatorRelation.objects.filter(coordinator_id=coordinator_id, space_key=space_key).delete()
+        resp = init_http_response(RespCode.success.value.key, RespCode.success.value.msg)
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+    except:
+        resp = {'code': -1, 'msg': 'error'}
+        return HttpResponse(json.dumps(resp), content_type="application/json")
