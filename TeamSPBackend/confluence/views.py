@@ -86,8 +86,6 @@ def get_session():
 
 
 def download(url, file_path, session):
-    # 1. download the image
-    # 2. return the image name, and image path
     r2 = session.get(url, verify=False)
     file = open(file_path, 'wb')
     file.write(r2.content)
