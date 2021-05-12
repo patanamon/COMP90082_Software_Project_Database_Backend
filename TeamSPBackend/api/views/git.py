@@ -20,7 +20,7 @@ def get_git_individual_commits(request, space_key):
         for item in StudentCommitCounts.objects.filter(space_key=space_key):
             temp = {
                 "student": str(item.student_name),
-                "commit_count": str(item.commit_counts)
+                "commit_count": int(item.commit_counts)
             }
             data.append(temp)
     else:
@@ -30,9 +30,9 @@ def get_git_individual_commits(request, space_key):
             for item in StudentCommitCounts.objects.filter(space_key=space_key):
                 temp = {
                     "student": str(item.student_name),
-                    "commit_count": str(item.commit_counts)
+                    "commit_count": int(item.commit_counts)
                 }
-            data.append(temp)
+                data.append(temp)
         else:
             resp = init_http_response_my_enum(RespCode.invalid_parameter)
             return make_json_response(resp=resp)
