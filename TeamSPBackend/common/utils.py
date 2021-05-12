@@ -32,6 +32,11 @@ def init_http_response(code, message, data=None):
         data=data,
     )
 
+def init_http_response_withoutdata(code, message):
+    return dict(
+        code=code,
+        message=message
+    )
 
 def init_http_response_my_enum(resp: MyEnum, data=None):
     return init_http_response(resp.key, resp.msg, data)
