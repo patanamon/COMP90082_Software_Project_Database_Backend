@@ -12,9 +12,6 @@ from TeamSPBackend.common.utils import make_json_response, check_user_login, bod
 from TeamSPBackend.project.models import ProjectCoordinatorRelation
 import time, datetime
 from TeamSPBackend.common.utils import transformTimestamp
-import logging
-
-logger = logging.getLogger('django')
 
 
 def update_individual_commits():
@@ -57,9 +54,9 @@ And it's necessary to consider 3 cases:
 3. Server crash, and in order to avoid duplication, don't do commit_query
 """
 def auto_update_commits():
+    today = transformTimestamp(time.time())
     for relation in ProjectCoordinatorRelation.objects.all():
         space_key = relation.space_key
-        today = int(time.mktime(datetime.date.today().timetuple()))
 
         # Case 3: avoid duplications
         if GitCommitCounts.objects.filter(space_key=space_key, query_date=today).exists():
@@ -77,6 +74,16 @@ def auto_update_commits():
         git_dto.url = git_dto.url.lstrip('$')
 
         commits = get_commits(git_dto.url, git_dto.author, git_dto.branch, git_dto.second_after, git_dto.second_before)
+        # exception handler
+        if commits is None:
+            resp = init_http_response_my_enum(RespCode.invalid_authentication)
+            return make_json_response(resp=resp)
+        if commits == -1:
+            resp = init_http_response_my_enum(RespCode.coordinator_not_found)
+            return make_json_response(resp=resp)
+        if commits == -2:
+            resp = init_http_response_my_enum(RespCode.git_config_not_found)
+            return make_json_response(resp=resp)
 
         # Case 1: has space_key
         if GitCommitCounts.objects.filter(space_key=space_key).exists():
@@ -92,25 +99,31 @@ def auto_update_commits():
         # Case 2: the first crawler
         else:
             delta_commit_count = {}  # To store every day commit count
-            days = []  # For loop
+            days = []  # For a month loop
+            today = transformTimestamp(time.time())
+            for i in range(30):
+                days.append(today - i * 24 * 60 * 60)
 
-            for i in commits:
-                ts = transformTimestamp(i['date'])
-                if ts in delta_commit_count:
-                    delta_commit_count[ts] += 1
-                else:
-                    delta_commit_count[ts] = 1
-                    days.append(ts)
+            for commit in commits:
+                ts = commit['date']
+                for i in days:
+                    if ts > i:
+                        break
+                    else:
+                        if i in delta_commit_count:
+                            delta_commit_count[i] += 1
+                        else:
+                            delta_commit_count[i] = 1
 
+            days = [i for i in reversed(days)]  # sort low to high
             for day in days:
                 count = 0
-                for k, v in delta_commit_count.items():
-                    if k <= day:
-                        count += v
+                if day in delta_commit_count:
+                    count = delta_commit_count[day]
                 # data which are returned to front end
                 tmp = {
-                    "commit_count": str(count),
-                    "date": str(day)
+                    "time": int(day),
+                    "commit_count": int(count)
                 }
                 data.append(tmp)
                 # store data into db by date
@@ -123,5 +136,5 @@ def auto_update_commits():
 
 
 utils.start_schedule(auto_update_commits, 60 * 60 * 24)
-utils.start_schedule(update_individual_commits, 60 * 60 * 24)
+# utils.start_schedule(update_individual_commits, 60 * 60 * 24)
 

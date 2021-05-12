@@ -25,10 +25,18 @@ GIT_LOG_PATH = ' --> {}'
 
 
 def construct_certification(repo):
-    coordinator_data = Coordinator.objects.all()[0]
-    username = coordinator_data.git_username
-    password = coordinator_data.git_password
-    return repo[0:8]+username+':'+password+'@'+repo[8:]
+    coordinator_data = Coordinator.objects.all()
+    if len(coordinator_data) == 0:
+        return -1  # -1 means there is no coordinator data
+    for item in coordinator_data:
+        if len(item.git_password) > 0 and len(item.git_username) > 0:
+            username = item.git_username
+            password = item.git_password
+            # username = 'chengzsh3'
+            # password = 'Czs0707+'
+            return repo[0:8] + username + ':' + password + '@' + repo[8:]
+    return -2  # -2 means there doesn't exist git username and pwd
+
 
 
 def init_git():
@@ -59,22 +67,27 @@ def process_changed(changed):
 
 def pull_repo(repo):
     repo = construct_certification(repo)
+    if repo == -1 or repo == -2:
+        return repo
     path = REPO_PATH + convert(repo)
+
     if check_path_exist(path):
         git_update = GIT_UPDATE_COMMAND.format(path)
         logger.info('[GIT] Path: {} Executing: {}'.format(path, git_update))
 
         os.system(git_update)
-        return
+        return 1  # 1 means valid
 
     git_clone = GIT_CLONE_COMMAND.format(repo, path)
     logger.info('[GIT] Path: {} Executing: {}'.format(path, git_clone))
     os.system(git_clone)
+    return 1
 
 
 def get_commits(repo, author=None, branch=None, after=None, before=None):
-    pull_repo(repo)
-
+    state = pull_repo(repo)
+    if state == -1 or state == -2:
+        return state
     repo = construct_certification(repo)
     repo_path = REPO_PATH + convert(repo)
     path = COMMIT_DIR + '/' + convert(repo) + '.log'
@@ -100,25 +113,18 @@ def get_commits(repo, author=None, branch=None, after=None, before=None):
         lines = f.readlines()
 
     if not lines:
-        raise Exception('git log error')
+        return None
 
     commits = list()
     for i in range(0, len(lines), 6):
         # hash_code = lines[i].strip()
         author = lines[i + 1].strip()
-        date = int(lines[i + 2].strip()) # * 1000
-        # description = lines[i + 3].strip()
-        # changed = lines[i + 4].strip()
-        # file, insert, delete = process_changed(changed)
+        date = int(lines[i + 2].strip())
 
         commit = dict(
             # hash=hash_code,
             author=author,
             date=date,
-            # description=description,
-            # file_changed=file,
-            # insertion=insert,
-            # deletion=delete,
         )
         commits.append(commit)
     return commits

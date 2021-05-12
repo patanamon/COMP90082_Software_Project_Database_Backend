@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-from collections import defaultdict
-import logging
+import time
 from django.views.decorators.http import require_http_methods
 from TeamSPBackend.git.views import update_individual_commits
 from TeamSPBackend.common.github_util import get_commits, get_pull_request
@@ -9,8 +8,6 @@ from TeamSPBackend.common.choices import RespCode
 from TeamSPBackend.common.utils import make_json_response, body_extract, init_http_response_my_enum, transformTimestamp
 from TeamSPBackend.git.models import StudentCommitCounts, GitCommitCounts
 from TeamSPBackend.project.models import ProjectCoordinatorRelation
-
-logger = logging.getLogger('django')
 
 
 @require_http_methods(['GET'])
@@ -26,7 +23,7 @@ def get_git_individual_commits(request, space_key):
     else:
         if ProjectCoordinatorRelation.objects.filter(space_key=space_key).exists():
             update_individual_commits()
-            temp={}
+            temp = {}
             for item in StudentCommitCounts.objects.filter(space_key=space_key):
                 temp = {
                     "student": str(item.student_name),
@@ -46,39 +43,57 @@ def get_git_commits(request, space_key):
     # Case 1: if git_commit table contains this space_key, get it directly from db
     data = []
     if GitCommitCounts.objects.filter(space_key=space_key).exists():
-        for i in GitCommitCounts.objects.filter(space_key=space_key):
+        query_set = GitCommitCounts.objects.filter(space_key=space_key)
+        start = 0
+        if len(query_set) >= 30:
+            start = len(query_set) - 30
+        for i in query_set[start:]:
             tmp = {
-                "time": str(i.query_date),
+                "time": int(i.query_date),
                 "commit_count": int(i.commit_counts)
             }
             data.append(tmp)
     else:
         # Case 2: if git_commit table doesn't contain while relation table contains, get it from git web (the first crawler)
-
         if ProjectCoordinatorRelation.objects.filter(space_key=space_key).exists():
             relation_data = ProjectCoordinatorRelation.objects.filter(space_key=space_key)
             commits = get_commits(relation_data[0].git_url, None, None, None, None)
+            if commits is None:
+                resp = init_http_response_my_enum(RespCode.invalid_authentication)
+                return make_json_response(resp=resp)
+            if commits == -1:
+                resp = init_http_response_my_enum(RespCode.coordinator_not_found)
+                return make_json_response(resp=resp)
+            if commits == -2:
+                resp = init_http_response_my_enum(RespCode.git_config_not_found)
+                return make_json_response(resp=resp)
+
             delta_commit_count = {}  # To store every day commit count
-            days = []  # For loop
+            days = []  # For a month loop
+            today = transformTimestamp(time.time())
+            for i in range(30):
+                days.append(today - i * 24 * 60 * 60)
 
-            for i in commits:
-                ts = transformTimestamp(i['date'])
-                if ts in delta_commit_count:
-                    delta_commit_count[ts] += 1
-                else:
-                    delta_commit_count[ts] = 1
-                    days.append(ts)
+            for commit in commits:
+                ts = commit['date']
+                for i in days:
+                    if ts > i:
+                        break
+                    else:
+                        if i in delta_commit_count:
+                            delta_commit_count[i] += 1
+                        else:
+                            delta_commit_count[i] = 1
 
+            days = [i for i in reversed(days)]  # sort days
             for day in days:
                 count = 0
-                for k, v in delta_commit_count.items():
-                    if k <= day:
-                        count += v
+                if day in delta_commit_count:
+                    count = delta_commit_count[day]
                 # data which are returned to front end
                 tmp = {
-                    "time": str(day),
+                    "time": int(day),
                     "commit_count": int(count)
-
                 }
                 data.append(tmp)
                 # store data into db by date
@@ -88,6 +103,34 @@ def get_git_commits(request, space_key):
                     query_date=day
                 )
                 git_data.save()
+            # for i in commits:
+            #     ts = transformTimestamp(i['date'])
+            #     if ts in delta_commit_count:
+            #         delta_commit_count[ts] += 1
+            #     else:
+            #         delta_commit_count[ts] = 1
+            #         days.append(ts)
+
+            # for day in days:
+            #     count = 0
+            #     for k, v in delta_commit_count.items():
+            #         if k <= day:
+            #             count += v
+            #     # data which are returned to front end
+            #     tmp = {
+            #         "time": int(day),
+            #         "commit_count": int(count)
+            #
+            #     }
+            #     data.append(tmp)
+            #     # store data into db by date
+            #     git_data = GitCommitCounts(
+            #         space_key=space_key,
+            #         commit_counts=count,
+            #         query_date=day
+            #     )
+            #     git_data.save()
+
 
         # Case 3: Neither contains, invalid space_key, return None
         else:

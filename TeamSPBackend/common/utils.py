@@ -158,7 +158,7 @@ def transformTimestamp(timestamp):
     d = time.localtime(timestamp).tm_mday
     s = str(datetime.date(y, m, d))
     timeArray = time.strptime(s, "%Y-%m-%d")
-    timeStamp = int(time.mktime(timeArray))
-    # Unified the date to zero o'clock of the day
+    timeStamp = int(time.mktime(timeArray)) + 24 * 60 * 60 - 1
+    # Unified the date to 23:59:59 of the day
     return timeStamp
 
