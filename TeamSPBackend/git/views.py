@@ -31,6 +31,15 @@ def update_individual_commits():
 
         # request commits from  github api
         commits = get_commits(git_dto.url, git_dto.author, git_dto.branch, git_dto.second_after, git_dto.second_before)
+        if commits is None:
+            resp = init_http_response_my_enum(RespCode.invalid_authentication)
+            return make_json_response(resp=resp)
+        if commits == -1:
+            resp = init_http_response_my_enum(RespCode.coordinator_not_found)
+            return make_json_response(resp=resp)
+        if commits == -2:
+            resp = init_http_response_my_enum(RespCode.git_config_not_found)
+            return make_json_response(resp=resp)
         CommitCount = defaultdict(lambda: 0)
         for commit in commits:
             CommitCount[commit['author']] += 1
