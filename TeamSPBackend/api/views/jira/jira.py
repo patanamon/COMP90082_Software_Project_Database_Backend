@@ -275,9 +275,9 @@ def get_ticket_count_team_timestamped(request, team):
 
         data = []
         for day in reversed(date_list):
-            todo = jira.jql('project = ' + team + ' AND status WAS "To Do" ON ' + str(day))['total']
-            in_progress = jira.jql('project = ' + team + ' AND status WAS "In Progress" ON ' + str(day))['total']
-            done = jira.jql('project = ' + team + ' AND status WAS "Done" ON ' + str(day))['total']
+            todo = jira.jql('project = ' + team + ' AND status WAS "To Do" ON ' + str(day), limit=0)['total']
+            in_progress = jira.jql('project = ' + team + ' AND status WAS "In Progress" ON ' + str(day), limit=0)['total']
+            done = jira.jql('project = ' + team + ' AND status WAS "Done" ON ' + str(day), limit=0)['total']
             #print(day, todo, in_progress, done)
             data.append({
                 'time': to_unix_time(day),
@@ -357,9 +357,9 @@ def get_ticket_count_team_timestamped_afterthefirstrun(request, team):
     try:
         jira = jira_login(request)
 
-        todo = jira.jql('project = ' + team + ' AND status = "To Do"')['total']
-        in_progress = jira.jql('project = ' + team + ' AND status = "In Progress"')['total']
-        done = jira.jql('project = ' + team + ' AND status = "Done"')['total']
+        todo = jira.jql('project = ' + team + ' AND status = "To Do"', limit=0)['total']
+        in_progress = jira.jql('project = ' + team + ' AND status = "In Progress"', limit=0)['total']
+        done = jira.jql('project = ' + team + ' AND status = "Done"', limit=0)['total']
         data = {
             'time': time.strftime('%Y-%m-%d', time.localtime(to_unix_time(datetime.date.today()))),
             'to_do': todo,
