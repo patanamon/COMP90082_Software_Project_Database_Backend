@@ -20,6 +20,7 @@ from dateutil import parser
 
 from TeamSPBackend.common.choices import RespCode
 from TeamSPBackend.common.utils import init_http_response
+from TeamSPBackend.common.utils import init_http_response_withoutdata
 from TeamSPBackend.common.utils import start_schedule
 from TeamSPBackend.api.views.jira.models import JiraCountByTime
 from TeamSPBackend.api.views.jira.models import IndividualContributions
@@ -409,51 +410,41 @@ def auto_get_ticket_count_team_timestamped(request):
 
 
 @require_http_methods(['POST'])
-def setGithubJiraUrl(request,team):
+def setGithubJiraUrl(request):
      try:
-        atl_user = '1'
-        atl_pass = '1'
-        coordinator_id = '4'
-        coordinator_name = '4'
-        data = request.POST
-        git_url = data['git_url']
-        jira_url = data['jira_url']
-        git_username = data['git_username']
-        git_password = data['git_password']
+        coordinator_id = '1'
+        coordinator_name = 'peter'
+        data = json.loads(request.body)
+        space_key = data.get("space_key")
+        git_url = data.get("git_url")
+        jira_url = data.get("jira_url")
+        git_username = data.get("git_username")
+        git_password = data.get("git_password")
 
-        try:
-            existURLRecord = ProjectCoordinatorRelation.objects.get(coordinator_id=coordinator_id,space_key=team)
-            existURLRecord.git_url=git_url
-            existURLRecord.jira_project=jira_url
-            existURLRecord.save()
-        except ObjectDoesNotExist:
-            # team = 'swen90013-2020-sp'
-            jira_obj1 = ProjectCoordinatorRelation(coordinator_id = coordinator_id,space_key=team,git_url=git_url,jira_project = jira_url)
-            jira_obj1.save()
-        try:
-            existCoordinatorRecord = Coordinator.objects.get(coordinator_name=coordinator_name)
-            existCoordinatorRecord.git_username = git_username
-            existCoordinatorRecord.git_password = git_password
-            existCoordinatorRecord.save()
-        except ObjectDoesNotExist:
-            jira_obj2 = Coordinator(coordinator_name=coordinator_name,git_username=git_username,git_password=git_password,atl_username = atl_user,atl_password=atl_pass)
-            jira_obj2.save()
+        existURLRecord = ProjectCoordinatorRelation.objects.get(coordinator_id=coordinator_id,space_key=space_key)
+        existURLRecord.git_url=git_url
+        existURLRecord.jira_project=jira_url
+        existURLRecord.save()
 
+        existCoordinatorRecord = Coordinator.objects.get(coordinator_name=coordinator_name)
+        existCoordinatorRecord.git_username = git_username
+        existCoordinatorRecord.git_password = git_password
+        existCoordinatorRecord.save()
 
-        resp = init_http_response(
+        resp = init_http_response_withoutdata(
              RespCode.success.value.key, RespCode.success.value.msg)
-        resp['data'] = 'success'
         return HttpResponse(json.dumps(resp), content_type="application/json")
      except:
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
 
 @require_http_methods(['POST'])
-def get_url_from_db(request,team):
+def get_url_from_db(request):
     try:
-        data = request.POST
-        coordinator_id = data['coordinator_id']
-        allExistRecord=list(ProjectCoordinatorRelation.objects.filter(coordinator_id=coordinator_id,space_key=team).values('git_url','jira_project'))
+        data = json.loads(request.body)
+        coordinator_id = data.get('coordinator_id')
+        space_key = data.get('space_key')
+        allExistRecord=list(ProjectCoordinatorRelation.objects.filter(coordinator_id=coordinator_id,space_key=space_key).values('git_url','jira_project'))
 
         resp = init_http_response(
             RespCode.success.value.key, RespCode.success.value.msg)
