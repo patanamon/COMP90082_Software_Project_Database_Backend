@@ -6,6 +6,8 @@ class ProjectCoordinatorRelation(models.Model):
     space_key = models.CharField(max_length=256, null=False)
     git_url = models.CharField(max_length=256, null=False)
     jira_project = models.CharField(max_length=256, null=False)
+    git_username = models.CharField(max_length=256, null=False)
+    git_password = models.CharField(max_length=256, null=False)
 
     class Meta:
         db_table = 'project_coordinator_relation'
