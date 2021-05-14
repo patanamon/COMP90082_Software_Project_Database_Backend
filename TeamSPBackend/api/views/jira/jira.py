@@ -27,7 +27,8 @@ from TeamSPBackend.api.views.jira.models import IndividualContributions
 from TeamSPBackend.api.views.jira.models import Urlconfig
 from TeamSPBackend.project.models import ProjectCoordinatorRelation
 from TeamSPBackend.coordinator.models import Coordinator
-from TeamSPBackend.api.config import atl_username,atl_password
+from TeamSPBackend.api.config import atl_username, atl_password
+from TeamSPBackend.git.views import auto_update_commits
 
 
 # helper functions
@@ -430,6 +431,8 @@ def setGithubJiraUrl(request):
         existCoordinatorRecord.git_username = git_username
         existCoordinatorRecord.git_password = git_password
         existCoordinatorRecord.save()
+
+        auto_update_commits(space_key)  # after setting git config, try to update git_commit table at once
 
         resp = init_http_response_withoutdata(
              RespCode.success.value.key, RespCode.success.value.msg)

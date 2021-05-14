@@ -12,9 +12,6 @@ from TeamSPBackend.common.utils import make_json_response, check_user_login, bod
 from TeamSPBackend.project.models import ProjectCoordinatorRelation
 import time, datetime
 from TeamSPBackend.common.utils import transformTimestamp
-import logging
-
-logger = logging.getLogger('django')
 
 
 def update_individual_commits():
@@ -34,6 +31,15 @@ def update_individual_commits():
 
         # request commits from  github api
         commits = get_commits(git_dto.url, git_dto.author, git_dto.branch, git_dto.second_after, git_dto.second_before)
+        if commits is None:
+            resp = init_http_response_my_enum(RespCode.invalid_authentication)
+            return make_json_response(resp=resp)
+        if commits == -1:
+            resp = init_http_response_my_enum(RespCode.user_not_found)
+            return make_json_response(resp=resp)
+        if commits == -2:
+            resp = init_http_response_my_enum(RespCode.git_config_not_found)
+            return make_json_response(resp=resp)
         CommitCount = defaultdict(lambda: 0)
         for commit in commits:
             CommitCount[commit['author']] += 1
@@ -56,27 +62,37 @@ And it's necessary to consider 3 cases:
 2. It doesn't have, crawler data and sorted by date
 3. Server crash, and in order to avoid duplication, don't do commit_query
 """
-def auto_update_commits():
+def auto_update_commits(space_key):
+    today = transformTimestamp(time.time())
+    # if space_key not None means user update their configuration, and it will update database at once
+    if space_key is not None:
+        if not GitCommitCounts.objects.filter(space_key=space_key).exists():
+            relation = ProjectCoordinatorRelation.objects.filter(space_key=space_key)
+            git_dto = construct_url(relation)
+            commits = get_commits(git_dto.url, space_key, git_dto.author, git_dto.branch, git_dto.second_after,
+                                  git_dto.second_before)
+            first_crawler(commits, space_key)
+
     for relation in ProjectCoordinatorRelation.objects.all():
         space_key = relation.space_key
-        today = int(time.mktime(datetime.date.today().timetuple()))
 
         # Case 3: avoid duplications
         if GitCommitCounts.objects.filter(space_key=space_key, query_date=today).exists():
             return
 
-        data = {
-            "url": relation.git_url
-        }
-        git_dto = GitDTO()
-        body_extract(data, git_dto)
-
-        if not git_dto.valid_url:
-            resp = init_http_response_my_enum(RespCode.invalid_parameter)
+        git_dto = construct_url(relation)
+        commits = get_commits(git_dto.url, space_key, git_dto.author, git_dto.branch, git_dto.second_after,
+                              git_dto.second_before)
+        # exception handler
+        if commits is None:
+            resp = init_http_response_my_enum(RespCode.invalid_authentication)
             return make_json_response(resp=resp)
-        git_dto.url = git_dto.url.lstrip('$')
-
-        commits = get_commits(git_dto.url, git_dto.author, git_dto.branch, git_dto.second_after, git_dto.second_before)
+        if commits == -1:
+            resp = init_http_response_my_enum(RespCode.user_not_found)
+            return make_json_response(resp=resp)
+        if commits == -2:
+            resp = init_http_response_my_enum(RespCode.git_config_not_found)
+            return make_json_response(resp=resp)
 
         # Case 1: has space_key
         if GitCommitCounts.objects.filter(space_key=space_key).exists():
@@ -91,35 +107,57 @@ def auto_update_commits():
 
         # Case 2: the first crawler
         else:
-            delta_commit_count = {}  # To store every day commit count
-            days = []  # For loop
+            first_crawler(commits, space_key)
 
-            for i in commits:
-                ts = transformTimestamp(i['date'])
-                if ts in delta_commit_count:
-                    delta_commit_count[ts] += 1
+
+def construct_url(relation):
+    data = {
+        "url": relation.git_url
+    }
+    git_dto = GitDTO()
+    body_extract(data, git_dto)
+
+    if not git_dto.valid_url:
+        resp = init_http_response_my_enum(RespCode.invalid_parameter)
+        return make_json_response(resp=resp)
+    git_dto.url = git_dto.url.lstrip('$')
+
+
+def first_crawler(commits, space_key):
+    delta_commit_count = {}  # To store every day commit count
+    days = []  # For a month loop
+    today = transformTimestamp(time.time())
+    for i in range(30):
+        days.append(today - i * 24 * 60 * 60)
+
+    for commit in commits:
+        ts = commit['date']
+        for i in days:
+            if ts > i:
+                break
+            else:
+                if i in delta_commit_count:
+                    delta_commit_count[i] += 1
                 else:
-                    delta_commit_count[ts] = 1
-                    days.append(ts)
+                    delta_commit_count[i] = 1
 
-            for day in days:
-                count = 0
-                for k, v in delta_commit_count.items():
-                    if k <= day:
-                        count += v
-                # data which are returned to front end
-                tmp = {
-                    "commit_count": str(count),
-                    "date": str(day)
-                }
-                data.append(tmp)
-                # store data into db by date
-                git_data = GitCommitCounts(
-                    space_key=space_key,
-                    commit_counts=count,
-                    query_date=day
-                )
-                git_data.save()
+    days = [i for i in reversed(days)]  # sort low to high
+    for day in days:
+        count = 0
+        if day in delta_commit_count:
+            count = delta_commit_count[day]
+        # data which are returned to front end
+        tmp = {
+            "time": int(day),
+            "commit_count": int(count)
+        }
+        # store data into db by date
+        git_data = GitCommitCounts(
+            space_key=space_key,
+            commit_counts=count,
+            query_date=day
+        )
+        git_data.save()
 
 def get_metrics():
     for relation in ProjectCoordinatorRelation.objects.all():
@@ -143,5 +181,5 @@ def get_metrics():
 
 
 utils.start_schedule(auto_update_commits, 60 * 60 * 24)
-utils.start_schedule(update_individual_commits, 60 * 60 * 24)
+utils.start_schedule(update_individual_commits(None), 60 * 60 * 24)
 
