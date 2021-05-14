@@ -121,6 +121,26 @@ def auto_update_commits():
                 )
                 git_data.save()
 
+def get_metrics():
+    for relation in ProjectCoordinatorRelation.objects.all():
+        space_key = relation.space_key
+
+        data = {
+            "url": relation.git_url
+        }
+        # create GitDTO object
+        git_dto = GitDTO()
+        # extract body information and store them in GitDTO.
+        body_extract(data, git_dto)
+
+        if not git_dto.valid_url:
+            resp = init_http_response_my_enum(RespCode.invalid_parameter)
+            return make_json_response(resp=resp)
+        git_dto.url = git_dto.url.lstrip('$')
+
+        # request commits from  github api
+        commits = get_commits(git_dto.url, git_dto.author, git_dto.branch, git_dto.second_after, git_dto.second_before)
+
 
 utils.start_schedule(auto_update_commits, 60 * 60 * 24)
 utils.start_schedule(update_individual_commits, 60 * 60 * 24)
