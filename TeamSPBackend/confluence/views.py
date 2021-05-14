@@ -103,30 +103,16 @@ def update_meeting_minutes():
     urllib3.disable_warnings()    # Since ssl is set to False, ignore the warning
     # delete all the data in the meeting_minutes table
     MeetingMinutes.objects.all().delete()
+    atl_username = config.atl_username
+    atl_password = config.atl_password
+    confluence = log_into_confluence(atl_username, atl_password)
     # select each coordinator data in Coordinator table
+    count = 0
     for coordinator in Coordinator.objects.all():
-        username = Coordinator.objects.get(id=coordinator.id).atl_username
-        password = Coordinator.objects.get(id=coordinator.id).atl_password
-        confluence = log_into_confluence(username, password)
         # select each project which coordinator can see
         for project in ProjectCoordinatorRelation.objects.filter(coordinator_id=coordinator.id):
             all_pages = confluence.get_all_pages_from_space(project.space_key, start=0, limit=999999)
-            count = 0  # meeting_id
-        # for page in all_pages:
-        #     page_title = page['title']
-        #     page_title_lower = page_title.lower()
-        #
-        #     page_link_webui = page['_links']['webui']
-        #     # each meeting minutes url
-        #     page_link = 'https://confluence.cis.unimelb.edu.au:8443/' + page_link_webui
-        #
-        #     # if the page title contains "meeting", add it into the DB
-        #     if "meeting" in page_title_lower:
-        #         count += 1
-        #         meet = MeetingMinutes(meeting_id=count, meeting_title=page_title, meeting_link=page_link, space_key=space_key)
-        #         meet.save()
-
-            # another way to get all the meeting pages exclude the parent page
+            # get all the meeting pages exclude the parent page
             for page in all_pages:
                 page_id = page['id']
                 # get all its child pages
@@ -139,11 +125,31 @@ def update_meeting_minutes():
                     # each meeting minutes url
                     page_link = 'https://confluence.cis.unimelb.edu.au:8443/' + page_link_webui
                     if 'meeting' in page_title_lower:
-                        count += 1
                         meet = MeetingMinutes(meeting_id=count, meeting_title=page_title, meeting_link=page_link,
                                               space_key=project.space_key)
                         meet.save()
+                        count += 1
 
+
+# the meeting minutes will stored in DB as long as project is imported
+def insert_space_meeting(space_key, username, password):
+    conf = log_into_confluence(username, password)
+    all_pages = conf.get_all_pages_from_space(space_key, start=0, limit=999999)
+    for page in all_pages:
+        page_id = page['id']
+        # get all its child pages
+        child = conf.get_page_child_by_type(page_id)
+        # if it does not have any child page, it is the page we want
+        if len(child) == 0:
+            page_title = page['title']
+            page_title_lower = page_title.lower()
+            page_link_webui = page['_links']['webui']
+            # each meeting minutes url
+            page_link = 'https://confluence.cis.unimelb.edu.au:8443/' + page_link_webui
+            if 'meeting' in page_title_lower:
+                meet = MeetingMinutes(meeting_title=page_title, meeting_link=page_link,
+                                      space_key=space_key)
+                meet.save()
 
 def update_page_history():
     history_data = []
