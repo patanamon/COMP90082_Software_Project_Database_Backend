@@ -10,7 +10,7 @@ from .views.account import account_router, login, logout, update_account, delete
 from .views.subject import subject_router, update_subject, delete_subject
 from .views.team import team_router, get_team_members, team_member_configure, team_configure
 from .views.slack import get_team_data, get_all_member_data, get_member_data
-from TeamSPBackend.api.views.project.project import import_project_in_batch
+from TeamSPBackend.api.views.project.project import import_project_in_batch,login_sso
 from .views.git import get_git_commits, get_git_pr, get_git_individual_commits
 
 
@@ -68,9 +68,10 @@ urlpatterns = [
     # COMP90082 21 S1 sprint1
     path('confluence/spaces/<key_word>', confluence.get_spaces_by_key),
     path('confluence/<space_key>/meeting_minutes', confluence.get_meeting_minutes),
+    path('sso/login', login_sso),
 
     path('confluence/imported_projects', confluence.get_imported_project),
-
+    path('confluence/delete', confluence.delete_project),
     path('confluence/spaces/<space_key>/page_count', confluence.get_page_count_by_time),
 
 
@@ -87,11 +88,10 @@ urlpatterns = [
     path('jira/<team>/ticket_count', jira.get_ticket_count_team_timestamped),
     path('jira/<team>/contributions', jira.get_contributions),
     path('jira/auto_ticket_count', jira.auto_get_ticket_count_team_timestamped),
-    path('jira/<team>/config', jira.setGithubJiraUrl),
-    path('jira/<team>/get_url_db', jira.get_url_from_db),
+    path('git/config', jira.setGithubJiraUrl),
+    path('git/get_url_db', jira.get_url_from_db),
     path('jira/<team>/get_contribution_db', jira.get_contributions_from_db),
     path('jira/<team>/get_ticket_count_db', jira.get_ticket_count_team_timestamped_from_db),
-
 
     # legacy but not working
     #path('jira/<team>/jira_cfd', jira.get_jira_cfd),

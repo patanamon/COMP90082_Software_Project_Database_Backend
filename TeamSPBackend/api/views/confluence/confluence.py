@@ -5,14 +5,12 @@ from requests.auth import HTTPBasicAuth
 
 from TeamSPBackend.common.choices import RespCode
 from django.views.decorators.http import require_http_methods
-from django.http.response import HttpResponse, HttpResponseRedirect, HttpResponseNotAllowed, HttpResponseBadRequest
-from TeamSPBackend.common.utils import make_json_response, init_http_response, check_user_login, check_body, \
-    body_extract, mills_timestamp
+from django.http.response import HttpResponse
+from TeamSPBackend.common.utils import init_http_response
 from TeamSPBackend.confluence.models import UserList
 from TeamSPBackend.confluence.models import MeetingMinutes
 
 from TeamSPBackend.project.models import ProjectCoordinatorRelation
-from TeamSPBackend.coordinator.models import Coordinator
 
 from TeamSPBackend.confluence.models import PageHistory
 from TeamSPBackend.coordinator.models import Coordinator
@@ -400,6 +398,7 @@ def get_page_count_by_time(request, space_key):
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
 
+
 @require_http_methods(['GET'])
 def get_imported_project(request):
     """
@@ -438,3 +437,16 @@ def get_imported_project(request):
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
 
+
+@require_http_methods(['POST'])
+def delete_project(request, *args, **kwargs):
+    try:
+        # delete space key that is imported by the coordinator.
+        space_key = json.loads(request.body)["space_key"]
+        coordinator_id = request.session['coordinator_id']
+        ProjectCoordinatorRelation.objects.filter(coordinator_id=coordinator_id, space_key=space_key).delete()
+        resp = {'code': RespCode.success.value.key, 'msg': RespCode.success.value.msg}
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+    except:
+        resp = {'code': -1, 'msg': 'error'}
+        return HttpResponse(json.dumps(resp), content_type="application/json")

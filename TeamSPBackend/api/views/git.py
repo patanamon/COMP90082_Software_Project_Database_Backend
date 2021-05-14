@@ -54,15 +54,16 @@ def get_git_commits(request, space_key):
             }
             data.append(tmp)
     else:
-        # Case 2: if git_commit table doesn't contain while relation table contains, get it from git web (the first crawler)
+        # Case 2: if git_commit table doesn't contain while relation table contains,
+        # get it from git web (the first crawler)
         if ProjectCoordinatorRelation.objects.filter(space_key=space_key).exists():
             relation_data = ProjectCoordinatorRelation.objects.filter(space_key=space_key)
-            commits = get_commits(relation_data[0].git_url, None, None, None, None)
+            commits = get_commits(relation_data[0].git_url, space_key, None, None, None, None)
             if commits is None:
                 resp = init_http_response_my_enum(RespCode.invalid_authentication)
                 return make_json_response(resp=resp)
             if commits == -1:
-                resp = init_http_response_my_enum(RespCode.coordinator_not_found)
+                resp = init_http_response_my_enum(RespCode.user_not_found)
                 return make_json_response(resp=resp)
             if commits == -2:
                 resp = init_http_response_my_enum(RespCode.git_config_not_found)

@@ -5,7 +5,7 @@ import logging
 import re
 
 from TeamSPBackend.settings.base_setting import BASE_DIR
-from TeamSPBackend.coordinator.models import Coordinator
+from TeamSPBackend.project.models import ProjectCoordinatorRelation
 
 logger = logging.getLogger('django')
 
@@ -24,19 +24,15 @@ GIT_LOG_BEFORE = ' --before={}'
 GIT_LOG_PATH = ' --> {}'
 
 
-def construct_certification(repo):
-    coordinator_data = Coordinator.objects.all()
-    if len(coordinator_data) == 0:
-        return -1  # -1 means there is no coordinator data
-    for item in coordinator_data:
-        if len(item.git_password) > 0 and len(item.git_username) > 0:
-            username = item.git_username
-            password = item.git_password
-            # username = 'chengzsh3'
-            # password = 'Czs0707+'
-            return repo[0:8] + username + ':' + password + '@' + repo[8:]
-    return -2  # -2 means there doesn't exist git username and pwd
-
+def construct_certification(repo, space_key):
+    user_info = ProjectCoordinatorRelation.objects.filter(space_key=space_key)
+    if len(user_info) == 0:
+        return -1  # -1 means there is no user data
+    username = user_info[0].git_username  # 'chengzsh3'
+    password = user_info[0].git_password  # 'Czs0707+'
+    if len(username) == 0 or len(password) == 0:
+        return -2  # -2 means there doesn't exist git username and pwd
+    return repo[0:8] + username + ':' + password + '@' + repo[8:]
 
 
 def init_git():
@@ -65,8 +61,8 @@ def process_changed(changed):
     return file, insert, delete
 
 
-def pull_repo(repo):
-    repo = construct_certification(repo)
+def pull_repo(repo, space_key):
+    repo = construct_certification(repo, space_key)
     if repo == -1 or repo == -2:
         return repo
     path = REPO_PATH + convert(repo)
@@ -84,11 +80,11 @@ def pull_repo(repo):
     return 1
 
 
-def get_commits(repo, author=None, branch=None, after=None, before=None):
-    state = pull_repo(repo)
+def get_commits(repo, space_key, author=None, branch=None, after=None, before=None):
+    state = pull_repo(repo, space_key)
     if state == -1 or state == -2:
         return state
-    repo = construct_certification(repo)
+    repo = construct_certification(repo, space_key)
     repo_path = REPO_PATH + convert(repo)
     path = COMMIT_DIR + '/' + convert(repo) + '.log'
 
@@ -128,8 +124,6 @@ def get_commits(repo, author=None, branch=None, after=None, before=None):
         )
         commits.append(commit)
     return commits
-
-
 
 
 def get_pull_request(repo, author=None, branch=None, after=None, before=None):
