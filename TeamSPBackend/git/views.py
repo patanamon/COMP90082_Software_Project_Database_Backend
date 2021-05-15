@@ -30,7 +30,9 @@ def update_individual_commits():
         git_dto.url = git_dto.url.lstrip('$')
 
         # request commits from  github api
-        commits = get_commits(git_dto.url, git_dto.author, git_dto.branch, git_dto.second_after, git_dto.second_before)
+        commits = get_commits(git_dto.url, relation.space_key, git_dto.author, git_dto.branch, git_dto.second_after,
+                              git_dto.second_before)
+       # commits = get_commits(git_dto.url, git_dto.author, git_dto.branch, git_dto.second_after, git_dto.second_before)
         if commits is None:
             resp = init_http_response_my_enum(RespCode.invalid_authentication)
             return make_json_response(resp=resp)
@@ -161,5 +163,5 @@ def first_crawler(commits, space_key):
 
 
 utils.start_schedule(auto_update_commits, 60 * 60 * 24)
-utils.start_schedule(update_individual_commits(None), 60 * 60 * 24)
+utils.start_schedule(update_individual_commits, 60 * 60 * 24)
 
