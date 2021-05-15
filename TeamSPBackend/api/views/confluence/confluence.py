@@ -297,10 +297,8 @@ def get_spaces_by_key(request, key_word):
     Method: GET
     Request: key_word
     """
-    # TODO: get confluence username and password
-    coordinator = Coordinator.objects.get(id=1)
-    username = coordinator.atl_username
-    password = coordinator.atl_password
+    username = config.atl_username
+    password = config.atl_password
     try:
         confluence = log_into_confluence(username, password)
         spaces = confluence.get_all_spaces()
@@ -309,8 +307,7 @@ def get_spaces_by_key(request, key_word):
             spaces = confluence.get_all_spaces(start=len(spaces))
             space_keys.extend([space['key'] for space in spaces if key_word.lower() in space['key'].lower()])
 
-        resp = init_http_response(
-            RespCode.success.value.key, RespCode.success.value.msg)
+        resp = init_http_response(RespCode.success.value.key, RespCode.success.value.msg)
         resp['data'] = space_keys
         return HttpResponse(json.dumps(resp), content_type="application/json")
     except:

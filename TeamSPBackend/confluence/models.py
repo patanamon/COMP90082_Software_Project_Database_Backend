@@ -12,6 +12,7 @@ class MeetingMinutes(models.Model):
     class Meta:
         db_table = 'meeting_minutes'
 
+
 class UserList(models.Model):
 
     user_id = models.CharField(max_length=256, null=False)
@@ -35,6 +36,7 @@ class PageHistory(models.Model):
 
 class IndividualConfluenceContribution(models.Model):
     space_key = models.CharField(max_length=256)
+    user_id = models.CharField(max_length=256)
     user_name = models.CharField(max_length=256)
     page_count = models.IntegerField()
 

@@ -7,10 +7,9 @@ import requests
 from TeamSPBackend.common.choices import RespCode
 from TeamSPBackend.coordinator.models import Coordinator
 from TeamSPBackend.project.models import ProjectCoordinatorRelation
-from TeamSPBackend.common.utils import check_body, \
-    body_extract, init_http_response
-from TeamSPBackend.api.dto.dto import ProjectDTO
-from TeamSPBackend.project.views import import_projects_into_coordinator
+from TeamSPBackend.common.utils import init_http_response
+from threading import Timer
+from TeamSPBackend.confluence.views import insert_space_user_list, insert_space_page_contribution, insert_space_page_history
 
 
 @require_http_methods(['POST'])
@@ -71,4 +70,5 @@ def import_project(coordinator_id, project):
     if len(ProjectCoordinatorRelation.objects.filter(coordinator_id=coordinator_id, space_key=project)) == 0:
         relation = ProjectCoordinatorRelation(coordinator_id=coordinator_id, space_key=project)
         relation.save()
-    pass
+        Timer(0, insert_space_user_list, project).start()
+        Timer(0, insert_space_page_history, project).start()
