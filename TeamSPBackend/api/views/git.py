@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 import time
 from django.views.decorators.http import require_http_methods
-from TeamSPBackend.git.views import update_individual_commits
-from TeamSPBackend.common.github_util import get_commits, get_pull_request
+from TeamSPBackend.git.views import update_individual_commits, get_metrics
+from TeamSPBackend.common.github_util import get_commits, get_pull_request, get_und_metrics
 from TeamSPBackend.api.dto.dto import GitDTO
 from TeamSPBackend.common.choices import RespCode
 from TeamSPBackend.common.utils import make_json_response, body_extract, init_http_response_my_enum, transformTimestamp
-from TeamSPBackend.git.models import StudentCommitCounts, GitCommitCounts
+from TeamSPBackend.git.models import StudentCommitCounts, GitCommitCounts, GitMetrics
 from TeamSPBackend.project.models import ProjectCoordinatorRelation
 
 
@@ -171,24 +171,19 @@ def get_git_pr(request, body, *args, **kwargs):
 @require_http_methods(['GET'])
 def get_git_metrics(request, space_key):
 
-    # todo: @jinzhe shan
     # Case 1: if git_metrics table contains this space_key, get it directly from db
+    if GitMetrics.objects.filter(space_key=space_key).exists():
+        metrics_data = metrics_data = GitMetrics.objects.filter(space_key=space_key)
     # Case 2: if git_metrics table does not contain this space_key, get it using get_metrics()
+    elif ProjectCoordinatorRelation.objects.filter(space_key=space_key).exists():
+        update_individual_commits()
+        relation_data = ProjectCoordinatorRelation.objects.filter(space_key=space_key)
+        get_metrics(relation_data)
+        metrics_data = GitMetrics.objects.filter(space_key=space_key)
     # Case 3: if space_key is invalid, return None
+    else:
+        resp = init_http_response_my_enum(RespCode.invalid_parameter)
+        return make_json_response(resp=resp)
 
-    # Case 0: mock data for front-end to do cooperative testing
-    data = []
-    tmp = {
-        "space_key" : 'abc',
-        "file_count" : 10,
-        "class_count" : 10,
-        "function_count" : 10,
-        "code_lines_count" : 10,
-        "comment_lines_count" : 3,
-        "comment_to_code_ratio" : 0.3,
-        "declarative_lines_count" : 10,
-        "executable_lines_count" : 10
-    }
-    data.append(tmp)
-    resp = init_http_response_my_enum(RespCode.success, data)
+    resp = init_http_response_my_enum(RespCode.success, metrics_data)
     return make_json_response(resp=resp)
