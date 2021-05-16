@@ -30,7 +30,9 @@ def update_individual_commits():
         git_dto.url = git_dto.url.lstrip('$')
 
         # request commits from  github api
-        commits = get_commits(git_dto.url, git_dto.author, git_dto.branch, git_dto.second_after, git_dto.second_before)
+        commits = get_commits(git_dto.url, relation.space_key, git_dto.author, git_dto.branch, git_dto.second_after,
+                              git_dto.second_before)
+       # commits = get_commits(git_dto.url, git_dto.author, git_dto.branch, git_dto.second_after, git_dto.second_before)
         if commits is None:
             resp = init_http_response_my_enum(RespCode.invalid_authentication)
             return make_json_response(resp=resp)
@@ -69,6 +71,9 @@ def auto_update_commits(space_key):
         if not GitCommitCounts.objects.filter(space_key=space_key).exists():
             relation = ProjectCoordinatorRelation.objects.filter(space_key=space_key)
             git_dto = construct_url(relation)
+            if not git_dto.valid_url:
+                resp = init_http_response_my_enum(RespCode.invalid_parameter)
+                return make_json_response(resp=resp)
             commits = get_commits(git_dto.url, space_key, git_dto.author, git_dto.branch, git_dto.second_after,
                                   git_dto.second_before)
             first_crawler(commits, space_key)
@@ -81,6 +86,9 @@ def auto_update_commits(space_key):
             return
 
         git_dto = construct_url(relation)
+        if not git_dto.valid_url:
+            resp = init_http_response_my_enum(RespCode.invalid_parameter)
+            return make_json_response(resp=resp)
         commits = get_commits(git_dto.url, space_key, git_dto.author, git_dto.branch, git_dto.second_after,
                               git_dto.second_before)
         # exception handler
@@ -116,11 +124,8 @@ def construct_url(relation):
     }
     git_dto = GitDTO()
     body_extract(data, git_dto)
-
-    if not git_dto.valid_url:
-        resp = init_http_response_my_enum(RespCode.invalid_parameter)
-        return make_json_response(resp=resp)
     git_dto.url = git_dto.url.lstrip('$')
+    return git_dto
 
 
 def first_crawler(commits, space_key):
@@ -180,6 +185,5 @@ def get_metrics():
         commits = get_commits(git_dto.url, git_dto.author, git_dto.branch, git_dto.second_after, git_dto.second_before)
 
 
-utils.start_schedule(auto_update_commits, 60 * 60 * 24)
-utils.start_schedule(update_individual_commits(None), 60 * 60 * 24)
-
+utils.start_schedule(auto_update_commits(None), 60 * 60 * 24)
+utils.start_schedule(update_individual_commits, 60 * 60 * 24)
