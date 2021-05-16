@@ -160,6 +160,6 @@ def first_crawler(commits, space_key):
         git_data.save()
 
 
-utils.start_schedule(auto_update_commits, 60 * 60 * 24)
-utils.start_schedule(update_individual_commits(None), 60 * 60 * 24)
+utils.start_schedule(auto_update_commits(None), 60 * 60 * 24)
+utils.start_schedule(update_individual_commits, 60 * 60 * 24)
 
