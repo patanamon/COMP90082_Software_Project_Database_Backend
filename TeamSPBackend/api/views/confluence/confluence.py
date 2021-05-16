@@ -14,7 +14,7 @@ from TeamSPBackend.project.models import ProjectCoordinatorRelation
 
 from TeamSPBackend.confluence.models import PageHistory
 from TeamSPBackend.coordinator.models import Coordinator
-
+from TeamSPBackend.api import config
 
 
 @require_http_methods(['GET'])
@@ -410,13 +410,10 @@ def get_imported_project(request):
     # user = request.session.get('user')
     # username = user['atl_username']
     # password = user['atl_password']
+    username = config.atl_username
+    password = config.atl_password
+    coordinator_id = request.session.get('coordinator_id')
 
-    coordinator_id = 1   # it is a hard code, needs to change in the future
-
-    # another way to get username and password
-    coordinator = Coordinator.objects.get(id=coordinator_id)
-    username = coordinator.atl_username
-    password = coordinator.atl_password
     try:
         confluence = log_into_confluence(username, password)
         data = []
