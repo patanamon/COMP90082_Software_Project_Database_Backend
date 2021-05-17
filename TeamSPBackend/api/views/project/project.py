@@ -26,6 +26,7 @@ def import_project(request, *args, **kwargs):
             relation.save()
             Timer(0, insert_space_user_list, args=(space_key,)).start()
             Timer(0, insert_space_page_history, args=(space_key,)).start()
+            Timer(0, insert_space_page_contribution, args=(space_key,)).start()
         resp = init_http_response(
             RespCode.success.value.key, RespCode.success.value.msg)
         return HttpResponse(json.dumps(resp), content_type="application/json")
