@@ -10,13 +10,15 @@ from .views.account import account_router, login, logout, update_account, delete
 from .views.subject import subject_router, update_subject, delete_subject
 from .views.team import team_router, get_team_members, team_member_configure, team_configure
 from .views.slack import get_team_data, get_all_member_data, get_member_data
-from TeamSPBackend.api.views.project.project import import_project_in_batch,login_sso
+from TeamSPBackend.api.views.project.project import import_project,login_sso
 from .views.git import get_git_commits, get_git_pr, get_git_individual_commits, get_git_metrics
 
 
 urlpatterns = [
     # Project Related API
-    path('project/import',import_project_in_batch),
+    path('project/import',import_project),
+    path('project/delete', confluence.delete_project),
+
     # Invitation Related API
     path('invite', invitation_router),
     path('invite/accept', invite_accept),
@@ -48,10 +50,9 @@ urlpatterns = [
     path('team/<space_key>', confluence.get_user_list),
 
     # Git Related API
-    path('git/commit/<space_key>', get_git_commits),
+    path('git/<space_key>/commit_count', get_git_commits),
     path('git/individual_commits/<space_key>', get_git_individual_commits),
     path('git/pullrequest', get_git_pr),
-    path('git/metrics/<space_key>', get_git_metrics),
 
     # Confluence Related API
     # path('confluence/spaces/<space_key>', confluence.get_space),
@@ -74,7 +75,7 @@ urlpatterns = [
 
     path('confluence/spaces/<space_key>/page_count', confluence.get_page_count_by_time),
 
-
+    path('sso/login', login_sso),
 
     # Jira Related API
     # legacy
