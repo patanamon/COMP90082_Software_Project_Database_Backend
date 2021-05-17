@@ -14,24 +14,23 @@ from TeamSPBackend.confluence.views import insert_space_user_list, insert_space_
 
 @require_http_methods(['POST'])
 # @check_body
-def import_project_in_batch(request, *args, **kwargs):
+def import_project(request, *args, **kwargs):
     # Method: POST
     try:
-        query_dict = request.POST
-        coordinator = query_dict['coordinator']
-        project_list = [x.strip() for x in query_dict['project_list'].split(',')]
+        json_body = json.loads(request.body)
+        space_key = json_body.get("space_key")
         # get coordinator_id based on coordinator_name
-        if len(Coordinator.objects.filter(coordinator_name=coordinator)) == 0:
-            print('No existing coordinator')
-        else:
-            coordinator_id = Coordinator.objects.filter(coordinator_name=coordinator)[0].id
-            for x in project_list:
-                import_project(coordinator_id, x)
+        coordinator_id = request.session['coordinator_id']
+        if len(ProjectCoordinatorRelation.objects.filter(coordinator_id=coordinator_id, space_key=space_key)) == 0:
+            relation = ProjectCoordinatorRelation(coordinator_id=coordinator_id, space_key=space_key)
+            relation.save()
+            Timer(0, insert_space_user_list, space_key).start()
+            Timer(0, insert_space_page_history, space_key).start()
         resp = init_http_response(
             RespCode.success.value.key, RespCode.success.value.msg)
         return HttpResponse(json.dumps(resp), content_type="application/json")
     except:
-        resp = {'code': 0, 'msg': 'error'}
+        resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
 
 
@@ -39,6 +38,7 @@ def store_coordinator(username):
     if len(Coordinator.objects.filter(coordinator_name=username)) == 0:
         coordinator = Coordinator(coordinator_name=username, )
         coordinator.save()
+
 
 @require_http_methods(['POST'])
 def login_sso(request, *args, **kwargs):
@@ -63,12 +63,3 @@ def login_sso(request, *args, **kwargs):
         print(e)
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
-
-
-def import_project(coordinator_id, project):
-    # check if this relation has already existed to avoid overwrite
-    if len(ProjectCoordinatorRelation.objects.filter(coordinator_id=coordinator_id, space_key=project)) == 0:
-        relation = ProjectCoordinatorRelation(coordinator_id=coordinator_id, space_key=project)
-        relation.save()
-        Timer(0, insert_space_user_list, project).start()
-        Timer(0, insert_space_page_history, project).start()

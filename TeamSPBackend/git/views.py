@@ -30,7 +30,9 @@ def update_individual_commits():
         git_dto.url = git_dto.url.lstrip('$')
 
         # request commits from  github api
-        commits = get_commits(git_dto.url, git_dto.author, git_dto.branch, git_dto.second_after, git_dto.second_before)
+        commits = get_commits(git_dto.url, relation.space_key, git_dto.author, git_dto.branch, git_dto.second_after,
+                              git_dto.second_before)
+       # commits = get_commits(git_dto.url, git_dto.author, git_dto.branch, git_dto.second_after, git_dto.second_before)
         if commits is None:
             resp = init_http_response_my_enum(RespCode.invalid_authentication)
             return make_json_response(resp=resp)
@@ -64,35 +66,33 @@ And it's necessary to consider 3 cases:
 """
 def auto_update_commits(space_key):
     today = transformTimestamp(time.time())
+    # print("space_key is: "+str(space_key))
     # if space_key not None means user update their configuration, and it will update database at once
     if space_key is not None:
         if not GitCommitCounts.objects.filter(space_key=space_key).exists():
             relation = ProjectCoordinatorRelation.objects.filter(space_key=space_key)
             git_dto = construct_url(relation)
+            if not git_dto.valid_url:
+                return
             commits = get_commits(git_dto.url, space_key, git_dto.author, git_dto.branch, git_dto.second_after,
                                   git_dto.second_before)
             first_crawler(commits, space_key)
 
     for relation in ProjectCoordinatorRelation.objects.all():
         space_key = relation.space_key
-
         # Case 3: avoid duplications
         if GitCommitCounts.objects.filter(space_key=space_key, query_date=today).exists():
-            return
-
+            continue
+        # construct dto
         git_dto = construct_url(relation)
+        # not a valid url, continue
+        if not git_dto.valid_url:
+            continue
         commits = get_commits(git_dto.url, space_key, git_dto.author, git_dto.branch, git_dto.second_after,
                               git_dto.second_before)
         # exception handler
-        if commits is None:
-            resp = init_http_response_my_enum(RespCode.invalid_authentication)
-            return make_json_response(resp=resp)
-        if commits == -1:
-            resp = init_http_response_my_enum(RespCode.user_not_found)
-            return make_json_response(resp=resp)
-        if commits == -2:
-            resp = init_http_response_my_enum(RespCode.git_config_not_found)
-            return make_json_response(resp=resp)
+        if commits is None or commits == -1 or commits == -2:
+            continue
 
         # Case 1: has space_key
         if GitCommitCounts.objects.filter(space_key=space_key).exists():
@@ -116,11 +116,8 @@ def construct_url(relation):
     }
     git_dto = GitDTO()
     body_extract(data, git_dto)
-
-    if not git_dto.valid_url:
-        resp = init_http_response_my_enum(RespCode.invalid_parameter)
-        return make_json_response(resp=resp)
     git_dto.url = git_dto.url.lstrip('$')
+    return git_dto
 
 
 def first_crawler(commits, space_key):
@@ -160,6 +157,5 @@ def first_crawler(commits, space_key):
         git_data.save()
 
 
-utils.start_schedule(auto_update_commits, 60 * 60 * 24)
-utils.start_schedule(update_individual_commits(None), 60 * 60 * 24)
-
+utils.start_schedule(auto_update_commits, 60 * 60 * 24, None)
+utils.start_schedule(update_individual_commits, 60 * 60 * 24)
