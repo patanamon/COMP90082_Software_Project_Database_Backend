@@ -10,13 +10,13 @@ from .views.account import account_router, login, logout, update_account, delete
 from .views.subject import subject_router, update_subject, delete_subject
 from .views.team import team_router, get_team_members, team_member_configure, team_configure
 from .views.slack import get_team_data, get_all_member_data, get_member_data
-from TeamSPBackend.api.views.project.project import import_project_in_batch,login_sso
+from TeamSPBackend.api.views.project.project import import_project,login_sso
 from .views.git import get_git_commits, get_git_pr, get_git_individual_commits
 
 
 urlpatterns = [
     # Project Related API
-    path('project/import',import_project_in_batch),
+    path('project/import',import_project),
     # Invitation Related API
     path('invite', invitation_router),
     path('invite/accept', invite_accept),
