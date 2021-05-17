@@ -3,7 +3,7 @@
 import os
 import logging
 import re
-# import understand
+import understand
 
 from TeamSPBackend.settings.base_setting import BASE_DIR
 from TeamSPBackend.project.models import ProjectCoordinatorRelation
@@ -188,21 +188,22 @@ def get_und_metrics(repo, space_key):
     path = REPO_PATH + convert(repo)
     und_metrics = UND_METRICS.format(und_file, path)
     logger.info('[Understand] File: {} Executing: {}'.format(und_file, und_metrics))
-    # os.system(UND_LICENSE)
-    # os.system(und_metrics)
-    # # open a project und
-    # udb = understand.open(und_file)
-    # # get all project metrics
-    # metrics = udb.metric(udb.metrics())
-    metrics = dict(
-        CountDeclClass=739,
-        CountDeclFile=314,
-        CountDeclFunction=4442,
-        CountLineCode=68031,
-        CountLineCodeDecl=8632,
-        CountLineCodeExe=59407,
-        CountLineComment=22083,
-        RatioCommentToCode=0.32,
-    )
+    os.system(UND_LICENSE)
+    os.system(und_metrics)
+    # open a project und
+    udb = understand.open(und_file)
+    # get all project metrics
+    metrics = udb.metric(udb.metrics())
+    # Mock data for local testing
+    # metrics = dict(
+    #     CountDeclClass=739,
+    #     CountDeclFile=314,
+    #     CountDeclFunction=4442,
+    #     CountLineCode=68031,
+    #     CountLineCodeDecl=8632,
+    #     CountLineCodeExe=59407,
+    #     CountLineComment=22083,
+    #     RatioCommentToCode=0.32,
+    # )
     return metrics
 
