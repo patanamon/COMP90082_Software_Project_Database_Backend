@@ -178,10 +178,9 @@ def get_git_metrics(request, space_key):
 
     # Case 1: if git_metrics table contains this space_key, get it directly from db
     if GitMetrics.objects.filter(space_key=space_key).exists():
-        metrics_data = metrics_data = GitMetrics.objects.filter(space_key=space_key)
+        metrics_data = GitMetrics.objects.filter(space_key=space_key)[0]
     # Case 2: if git_metrics table does not contain this space_key, get it using get_metrics()
     elif ProjectCoordinatorRelation.objects.filter(space_key=space_key).exists():
-        update_individual_commits()
         relation_data = ProjectCoordinatorRelation.objects.filter(space_key=space_key)
         get_metrics(relation_data)
         metrics_data = GitMetrics.objects.filter(space_key=space_key)
@@ -189,6 +188,24 @@ def get_git_metrics(request, space_key):
     else:
         resp = init_http_response_my_enum(RespCode.invalid_parameter)
         return make_json_response(resp=resp)
+    data = {
+        "file_count": int(metrics_data.file_count),
+        "class_count": int(metrics_data.class_count),
+        "function_count": int(metrics_data.function_count),
+        "code_lines_count": int(metrics_data.code_lines_count),
+        "declarative_lines_count": int(metrics_data.declarative_lines_count),
+        "executable_lines_count": int(metrics_data.executable_lines_count),
+        "comment_lines_count": int(metrics_data.comment_lines_count),
+        "comment_to_code_ratio": float(metrics_data.comment_to_code_ratio),
+        # "file_count": 1,
+        # "class_count": 2,
+        # "function_count": 3,
+        # "code_lines_count": 4,
+        # "declarative_lines_count": 5,
+        # "executable_lines_count": 6,
+        # "comment_lines_count": 7,
+        # "comment_to_code_ratio": 0.45,
+    }
 
-    resp = init_http_response_my_enum(RespCode.success, metrics_data)
+    resp = init_http_response_my_enum(RespCode.success, data)
     return make_json_response(resp=resp)

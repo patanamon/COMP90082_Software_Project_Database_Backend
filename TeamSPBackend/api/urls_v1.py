@@ -52,6 +52,7 @@ urlpatterns = [
     # Git Related API
     path('git/<space_key>/commit_count', get_git_commits),
     path('git/individual_commits/<space_key>', get_git_individual_commits),
+    path('git/metrics/<space_key>', get_git_metrics),
     path('git/pullrequest', get_git_pr),
 
     # Confluence Related API
