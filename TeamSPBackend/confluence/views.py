@@ -267,5 +267,4 @@ def update_page_contribution():
 utils.start_schedule(update_meeting_minutes, 60 * 60 * 24)  # update meeting minutes on a daily basis
 utils.start_schedule(update_page_history, 60 * 60 * 24)
 utils.start_schedule(update_user_list, 60 * 60 * 24)  # update page contributions and user list on a daily basis
-utils.start_schedule(update_user_list, 60 * 60 * 24)  # update page contributions and user list on a daily basis
 
