@@ -8,6 +8,8 @@ from TeamSPBackend.common.choices import RespCode
 from TeamSPBackend.coordinator.models import Coordinator
 from TeamSPBackend.project.models import ProjectCoordinatorRelation
 from TeamSPBackend.common.utils import init_http_response
+from threading import Timer
+from TeamSPBackend.confluence.views import insert_space_user_list, insert_space_page_contribution, insert_space_page_history
 
 
 @require_http_methods(['POST'])
@@ -22,6 +24,9 @@ def import_project(request, *args, **kwargs):
         if len(ProjectCoordinatorRelation.objects.filter(coordinator_id=coordinator_id, space_key=space_key)) == 0:
             relation = ProjectCoordinatorRelation(coordinator_id=coordinator_id, space_key=space_key)
             relation.save()
+            Timer(0, insert_space_user_list, args=(space_key,)).start()
+            Timer(0, insert_space_page_history, args=(space_key,)).start()
+            Timer(0, insert_space_page_contribution, args=(space_key,)).start()
         resp = init_http_response(
             RespCode.success.value.key, RespCode.success.value.msg)
         return HttpResponse(json.dumps(resp), content_type="application/json")
