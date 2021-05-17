@@ -8,6 +8,7 @@ from TeamSPBackend.common.choices import RespCode
 from TeamSPBackend.common.utils import make_json_response, body_extract, init_http_response_my_enum, transformTimestamp
 from TeamSPBackend.git.models import StudentCommitCounts, GitCommitCounts
 from TeamSPBackend.project.models import ProjectCoordinatorRelation
+from TeamSPBackend.git.views import construct_url
 
 
 @require_http_methods(['GET'])
@@ -57,8 +58,12 @@ def get_git_commits(request, space_key):
         # Case 2: if git_commit table doesn't contain while relation table contains,
         # get it from git web (the first crawler)
         if ProjectCoordinatorRelation.objects.filter(space_key=space_key).exists():
-            relation_data = ProjectCoordinatorRelation.objects.filter(space_key=space_key)
-            commits = get_commits(relation_data[0].git_url, space_key, None, None, None, None)
+            relation_data = ProjectCoordinatorRelation.objects.filter(space_key=space_key)[0]
+            git_dto = construct_url(relation_data)
+            if not git_dto.valid_url:
+                resp = init_http_response_my_enum(RespCode.invalid_parameter)
+                return make_json_response(resp=resp)
+            commits = get_commits(relation_data.git_url, space_key, None, None, None, None)
             if commits is None:
                 resp = init_http_response_my_enum(RespCode.invalid_authentication)
                 return make_json_response(resp=resp)
