@@ -182,6 +182,9 @@ def update_space_page_history(space_key):
             delta_page_count[page_create_time] = 1
             days.append(page_create_time)
 
+    if len(days) < 1:
+        return []
+
     days.sort()
     page_count = 0
     cur_time = int(time.mktime(datetime.now().timetuple()))

@@ -7,8 +7,8 @@ class Coordinator(models.Model):
     # git_username = models.CharField(max_length=256, null=False)
     # git_password = models.CharField(max_length=256, null=False)
     # atlassian username and password
-    atl_username = models.CharField(max_length=256, null=False)
-    atl_password = models.CharField(max_length=256, null=False)
+    # atl_username = models.CharField(max_length=256, null=False)
+    # atl_password = models.CharField(max_length=256, null=False)
 
     class Meta:
         db_table = 'coordinator'
