@@ -58,7 +58,7 @@ def login_sso(request, *args, **kwargs):
             request.session['coordinator_id'] = Coordinator.objects.filter(coordinator_name=username)[0].id
             request.session['coordinator_name'] = username
         else:
-            resp = {'code': -2, 'msg': 'authentication failed', "Access-Control-Allow-Headers": "Origin,Content-Type,Set-Cookie,Accept,Token"}
+            resp = {'code': -2, 'msg': 'authentication failed'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
     except Exception as e:
         print(e)

@@ -22,6 +22,8 @@ CORS_ALLOW_HEADERS = (
     'x-requested-with',
     'dnt',
     'X_FILENAME',
+    'Cookie',
+    'Set-Cookie'
 )
 
 CSRF_COOKIE_SAMESITE = None
