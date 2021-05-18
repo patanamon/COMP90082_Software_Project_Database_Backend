@@ -107,7 +107,6 @@ def update_meeting_minutes():
     atl_password = config.atl_password
     confluence = log_into_confluence(atl_username, atl_password)
     # select each coordinator data in Coordinator table
-    count = 0
     for coordinator in Coordinator.objects.all():
         # select each project which coordinator can see
         for project in ProjectCoordinatorRelation.objects.filter(coordinator_id=coordinator.id):
@@ -125,15 +124,16 @@ def update_meeting_minutes():
                     # each meeting minutes url
                     page_link = 'https://confluence.cis.unimelb.edu.au:8443/' + page_link_webui
                     if 'meeting' in page_title_lower:
-                        meet = MeetingMinutes(meeting_id=count, meeting_title=page_title, meeting_link=page_link,
-                                              space_key=project.space_key)
-                        meet.save()
-                        count += 1
+                        # it is not in the DB before
+                        if len(MeetingMinutes.objects.filter(meeting_title=page_title)) == 0:
+                            meet = MeetingMinutes(meeting_title=page_title, meeting_link=page_link,
+                                                  space_key=project.space_key)
+                            meet.save()
 
 
 # the meeting minutes will stored in DB as long as project is imported
-def insert_space_meeting(space_key, username, password):
-    conf = log_into_confluence(username, password)
+def insert_space_meeting(space_key):
+    conf = log_into_confluence(config.atl_username, config.atl_password)
     all_pages = conf.get_all_pages_from_space(space_key, start=0, limit=999999)
     for page in all_pages:
         page_id = page['id']
@@ -147,9 +147,10 @@ def insert_space_meeting(space_key, username, password):
             # each meeting minutes url
             page_link = 'https://confluence.cis.unimelb.edu.au:8443/' + page_link_webui
             if 'meeting' in page_title_lower:
-                meet = MeetingMinutes(meeting_title=page_title, meeting_link=page_link,
-                                      space_key=space_key)
-                meet.save()
+                if len(MeetingMinutes.objects.filter(meeting_title=page_title)) == 0:
+                    meet = MeetingMinutes(meeting_title=page_title, meeting_link=page_link,
+                                          space_key=space_key)
+                    meet.save()
 
 def insert_space_page_history(space_key):
     page_history = update_space_page_history(space_key)
