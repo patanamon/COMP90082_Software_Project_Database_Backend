@@ -3,6 +3,7 @@
 import os
 import logging
 import re
+import understand
 
 from TeamSPBackend.settings.base_setting import BASE_DIR
 from TeamSPBackend.project.models import ProjectCoordinatorRelation
@@ -23,6 +24,10 @@ GIT_LOG_AFTER = ' --after={}'
 GIT_LOG_BEFORE = ' --before={}'
 GIT_LOG_PATH = ' --> {}'
 
+# set Understand License
+UND_LICENSE = 'und -setlicensecode XfA7YbMwUZ9OCYJd'
+# understand und command line for loading a git repo and generate metrics
+UND_METRICS = 'und create -db {} add {} analyze metrics'
 
 def construct_certification(repo, space_key):
     user_info = ProjectCoordinatorRelation.objects.filter(space_key=space_key)
@@ -174,4 +179,31 @@ def get_pull_request(repo, author=None, branch=None, after=None, before=None):
 #     init_git()
 #     pull_repo('https://github.com/LikwunCheung/TeamSPBackend')
 #     get_commits('https://github.com/LikwunCheung/TeamSPBackend')
+
+def get_und_metrics(repo, space_key):
+    state = pull_repo(repo, space_key)
+    if state == -1 or state == -2:
+        return state
+    und_file = construct_certification(repo, space_key) + '.und'
+    path = REPO_PATH + convert(repo)
+    und_metrics = UND_METRICS.format(und_file, path)
+    logger.info('[Understand] File: {} Executing: {}'.format(und_file, und_metrics))
+    os.system(UND_LICENSE)
+    os.system(und_metrics)
+    # open a project und
+    udb = understand.open(und_file)
+    # get all project metrics
+    metrics = udb.metric(udb.metrics())
+    # Mock data for local testing
+    # metrics = dict(
+    #     CountDeclClass=739,
+    #     CountDeclFile=314,
+    #     CountDeclFunction=4442,
+    #     CountLineCode=68031,
+    #     CountLineCodeDecl=8632,
+    #     CountLineCodeExe=59407,
+    #     CountLineComment=22083,
+    #     RatioCommentToCode=0.32,
+    # )
+    return metrics
 
