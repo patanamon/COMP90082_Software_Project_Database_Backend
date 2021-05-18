@@ -63,16 +63,24 @@ def get_project_key(project, jira):
     return result
 
 
-def get_member_names(project_key, jira):
-    """"Get team members with project key"""
-    jira_resp = jira.get_all_assignable_users_for_project(project_key)
-    name = []
-    display_name = []
-    for d in jira_resp:
-        name.append(d['name'])
-        display_name.append(d['displayName'])
-
-    return name, display_name
+def get_done_contributor_names(team, jira):
+    """Get contributors (name, displayName) list of a project"""
+    data = []
+    total = jira.jql('project = ' + team + ' AND Status = Done', limit=0)['total']  # get total issue count
+    for i in range(ceil(total / 100)):  # recurring query if count > 100
+        start = 0 + i * 100
+        data.append(jira.jql('project = ' + team + ' AND Status = Done', start=start, limit=100)['issues'])
+    data = [issue for subdata in data for issue in subdata]  # flatten
+    name_lst = []
+    display_name_lst = []
+    for i in range(len(data)):
+        result = data[i]['fields']['assignee']
+        if result is not None:
+            if result['name'] not in name_lst:
+                name_lst.append(result['name'])
+            if result['displayName'] not in display_name_lst:
+                display_name_lst.append(result['displayName'])
+    return name_lst, display_name_lst
 
 
 def datetime_truncate(t):
@@ -312,7 +320,7 @@ def get_contributions(request, team):
     try:
         jira = jira_login(request)
 
-        students, names = get_member_names(get_project_key(team, jira), jira)
+        students, names = get_done_contributor_names(get_project_key(team, jira), jira)
         count = []
         for student in students:
             count.append(jira.jql('assignee = ' + student + ' AND project = '
