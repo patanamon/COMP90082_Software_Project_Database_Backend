@@ -12,7 +12,7 @@ class JiraCountByTime(models.Model):
 
 
     class Meta:
-        db_table = 'jira_count_by_time'
+        db_table = 'jiraCountByTime'
 
 class IndividualContributions(models.Model):
     id = models.AutoField(primary_key=True)
@@ -22,7 +22,7 @@ class IndividualContributions(models.Model):
 
 
     class Meta:
-        db_table = 'individual_contributions'
+        db_table = 'individualContributions'
 
 
 class Urlconfig(models.Model):
