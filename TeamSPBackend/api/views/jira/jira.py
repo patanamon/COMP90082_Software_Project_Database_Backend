@@ -17,6 +17,7 @@ from django.core.exceptions import ObjectDoesNotExist
 import os
 import time
 from dateutil import parser
+from shutil import copyfile
 
 from TeamSPBackend.common.choices import RespCode
 from TeamSPBackend.common.utils import init_http_response
@@ -466,19 +467,20 @@ def get_url_from_db(request):
         return HttpResponse(json.dumps(resp), content_type="application/json")
 
 
-# Legacy APIs, not working
-
-def jira_analytics(request, team):
-    """ Configures config.yml and executes it with jira-agile-metrics"""
-    username, password = session_interpreter(request)
-    with open('config.yaml', 'r') as file:
+def jira_analytics(username, password, team):
+    """Only queries cfd with jira-agile metrics"""
+    copyfile('cfd-template.yaml', 'cfd.yaml')
+    with open('cfd.yaml', 'r') as file:
         data = file.read()
+        data = data.replace('jirainstance', 'https://jira.cis.unimelb.edu.au:8444')
         data = data.replace('usernameplace', username)
         data = data.replace('passwordplace', password)
         data = data.replace('projectplace', team)
-    with open('config.yaml', 'w') as file:
+    with open('cfd.yaml', 'w') as file:
         file.write(data)
-    os.popen("jira-agile-metrics config.yaml --output-directory TeamSPBackend/api/views/jira")
+    os.system("jira-agile-metrics cfd.yaml --output-directory $PWD")
+    copyfile('cfd-template.yaml', 'cfd.yaml')
+# Legacy APIs, not working
 
 
 @require_http_methods(['GET'])

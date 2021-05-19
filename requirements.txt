@@ -26,3 +26,4 @@ jira-metrics-extract
 xsmtplib==1.0.1.dev0
 slackclient==2.8.2
 PyYAML~=5.3.1
+jira-agile-metrics==0.24
