@@ -53,7 +53,9 @@ def update_space_user_list(space_key):
 def insert_space_user_list(space_key):
     insert_space_page_contribution(space_key)
     user_list = update_space_user_list(space_key)
-    UserList.objects.bulk_create(user_list)
+    with transaction.atomic():
+        UserList.objects.filter(space_key=space_key).delete()
+        UserList.objects.bulk_create(user_list)
 
 
 def update_user_list():
@@ -154,7 +156,9 @@ def insert_space_meeting(space_key):
 
 def insert_space_page_history(space_key):
     page_history = update_space_page_history(space_key)
-    PageHistory.objects.bulk_create(page_history)
+    with transaction.atomic():
+        PageHistory.objects.filter(space_key=space_key).delete()
+        PageHistory.objects.bulk_create(page_history)
 
 
 def update_space_page_history(space_key):
@@ -238,6 +242,8 @@ def update_space_page_contribution(space_key):
 
     page_contribution = []
     for user_name in member_contributions:
+        if user_name == 'admin':
+            continue
         page_count = member_contributions[user_name]
         page_contribution.append(IndividualConfluenceContribution(
             space_key=space_key,
@@ -251,7 +257,9 @@ def update_space_page_contribution(space_key):
 
 def insert_space_page_contribution(space_key):
     page_contribution = update_space_page_contribution(space_key)
-    IndividualConfluenceContribution.objects.bulk_create(page_contribution)
+    with transaction.atomic():
+        IndividualConfluenceContribution.objects.filter(space_key=space_key).delete()
+        IndividualConfluenceContribution.objects.bulk_create(page_contribution)
 
 
 def update_page_contribution():
