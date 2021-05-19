@@ -18,6 +18,7 @@ import os
 import time
 from dateutil import parser
 from shutil import copyfile
+import fileinput
 
 from TeamSPBackend.common.choices import RespCode
 from TeamSPBackend.common.utils import init_http_response
@@ -272,11 +273,11 @@ def get_ticket_count_team_timestamped(request, team):
         username, password = session_interpreter(request)
         jira_analytics(username, password, team)
         data = []
-        with open('cfd.yaml', newline='') as csv_file:
+        with open('TeamSPBackend/api/views/jira/cfd_modified.csv', newline='') as csv_file:
             reader = csv.DictReader(csv_file)
             for row in reader:
                 data.append({
-                    'time': to_unix_time(datetime_truncate(parser.parse(row['']))),
+                    'time': to_unix_time(datetime_truncate(parser.parse(row['Time']))),
                     'to_do': int(float(row['To Do'])),
                     'in_progress': int(float(row['In Progress'])),
                     'done': int(float(row['Done']))
@@ -454,7 +455,7 @@ def get_url_from_db(request):
 
 
 def jira_analytics(username, password, team):
-    """Only queries cfd with jira-agile metrics"""
+    """Only queries cfd with jira-agile-metrics"""
     copyfile('cfd-template.yaml', 'cfd.yaml')
     with open('cfd.yaml', 'r') as file:
         data = file.read()
@@ -464,8 +465,18 @@ def jira_analytics(username, password, team):
         data = data.replace('projectplace', team)
     with open('cfd.yaml', 'w') as file:
         file.write(data)
-    os.system("jira-agile-metrics cfd.yaml --output-directory $PWD")
-    copyfile('cfd-template.yaml', 'cfd.yaml')
+    os.system("jira-agile-metrics cfd.yaml --output-directory TeamSPBackend/api/views/jira")
+    copyfile('cfd-template.yaml', 'cfd.yaml')  # overwrites sensitive info
+    # rename csv headers
+    outputFileName = os.path.splitext(inputFileName)[0] + "_modified.csv"
+    with open(outputFileName, "w") as outfile:
+        for line in fileinput.input(
+                ['cfd.csv'],
+                inplace=False):
+            if fileinput.isfirstline():
+                outfile.write('Time,To Do,In Progress,Done\n')
+            else:
+                outfile.write(line)
 # Legacy APIs, not working
 
 
