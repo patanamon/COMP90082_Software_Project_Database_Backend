@@ -3,7 +3,7 @@
 import os
 import logging
 import re
-import understand
+import sys
 
 from TeamSPBackend.settings.base_setting import BASE_DIR
 from TeamSPBackend.project.models import ProjectCoordinatorRelation
@@ -24,10 +24,21 @@ GIT_LOG_AFTER = ' --after={}'
 GIT_LOG_BEFORE = ' --before={}'
 GIT_LOG_PATH = ' --> {}'
 
+# using Understand for analyze Metrics
+# For Mac
+# UND_PATH = '/Applications/Understand.app/Contents/MacOS/'
+# For Linux Server
+UND_PATH = '~/comp90082sp/understand/scitools/bin/linux64/'
+sys.path.append(UND_PATH)
+sys.path.append(UND_PATH+'Python')
+import understand
+
 # set Understand License
 UND_LICENSE = 'und -setlicensecode XfA7YbMwUZ9OCYJd'
+os.system(UND_LICENSE)
+
 # understand und command line for loading a git repo and generate metrics
-UND_METRICS = 'und create -db {} add {} analyze metrics'
+UND_METRICS = UND_PATH + 'und create -db {} -languages python C++ Java add {} {} analyze'
 
 def construct_certification(repo, space_key):
     user_info = ProjectCoordinatorRelation.objects.filter(space_key=space_key)
@@ -175,10 +186,6 @@ def get_pull_request(repo, author=None, branch=None, after=None, before=None):
         )
         commits.append(commit)
     return commits
-# if __name__ == '__main__':
-#     init_git()
-#     pull_repo('https://github.com/LikwunCheung/TeamSPBackend')
-#     get_commits('https://github.com/LikwunCheung/TeamSPBackend')
 
 def get_und_metrics(repo, space_key):
     state = pull_repo(repo, space_key)
@@ -186,24 +193,17 @@ def get_und_metrics(repo, space_key):
         return state
     und_file = construct_certification(repo, space_key) + '.und'
     path = REPO_PATH + convert(repo)
-    und_metrics = UND_METRICS.format(und_file, path)
+    und_metrics = UND_METRICS.format(und_file, path, und_file)
     logger.info('[Understand] File: {} Executing: {}'.format(und_file, und_metrics))
-    os.system(UND_LICENSE)
     os.system(und_metrics)
     # open a project und
     udb = understand.open(und_file)
     # get all project metrics
     metrics = udb.metric(udb.metrics())
-    # Mock data for local testing
-    # metrics = dict(
-    #     CountDeclClass=739,
-    #     CountDeclFile=314,
-    #     CountDeclFunction=4442,
-    #     CountLineCode=68031,
-    #     CountLineCodeDecl=8632,
-    #     CountLineCodeExe=59407,
-    #     CountLineComment=22083,
-    #     RatioCommentToCode=0.32,
-    # )
+    logger.info('[Understand] {} get Metrics: {} '.format(und_file, metrics))
     return metrics
 
+# if __name__ == '__main__':
+#     init_git()
+#     pull_repo('https://github.com/LikwunCheung/TeamSPBackend')
+#     get_commits('https://github.com/LikwunCheung/TeamSPBackend')
