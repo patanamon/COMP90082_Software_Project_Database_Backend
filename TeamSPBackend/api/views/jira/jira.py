@@ -533,6 +533,6 @@ if 'runserver' in sys.argv:
     request.method = 'GET'
     request.build_absolute_uri
     request.META['SERVER_NAME'] = request.build_absolute_uri
-    # utils.start_schedule(auto_get_contributions, 60 * 60 * 24, request)
-    # auto_get_ticket_count_team_timestamped_history(request)
-    # utils.start_schedule(auto_get_ticket_count_team_timestamped, 60*60*24, request)
+    utils.start_schedule(auto_get_contributions, 60 * 60 * 24, request)
+    auto_get_ticket_count_team_timestamped_history(request)
+    utils.start_schedule(auto_get_ticket_count_team_timestamped, 60*60*24, request)
