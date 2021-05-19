@@ -269,36 +269,22 @@ def get_issues_per_sprint(request, team):
 def get_ticket_count_team_timestamped(request, team):
      """ Return a HttpResponse, data contains 3 kinds of issues timestamped with unix time of each day"""
      try:
-        jira = jira_login(request)
-
-        jquery = jira.jql('project = ' + team + ' ORDER BY created ASC')['issues'][0]['fields']['created']
-
-        # parses to datetime object
-        jquery = parser.parse(jquery)
-
-        d0 = datetime_truncate(jquery)
-        today = datetime.date.today()
-
-        delta = today - d0
-
-        date_list = [today - datetime.timedelta(days=x) for x in range(delta.days)]
-
+        username, password = session_interpreter(request)
+        jira_analytics(username, password, team)
         data = []
-        for day in reversed(date_list):
-            todo = jira.jql('project = ' + team + ' AND status WAS "To Do" ON ' + str(day), limit=0)['total']
-            in_progress = jira.jql('project = ' + team + ' AND status WAS "In Progress" ON ' + str(day), limit=0)['total']
-            done = jira.jql('project = ' + team + ' AND status WAS "Done" ON ' + str(day), limit=0)['total']
-            #print(day, todo, in_progress, done)
-            data.append({
-                'time': to_unix_time(day),
-                'to_do': todo,
-                'in_progress': in_progress,
-                'done': done
-            })
+        with open('cfd.yaml', newline='') as csv_file:
+            reader = csv.DictReader(csv_file)
+            for row in reader:
+                data.append({
+                    'time': to_unix_time(datetime_truncate(parser.parse(row['']))),
+                    'to_do': int(float(row['To Do'])),
+                    'in_progress': int(float(row['In Progress'])),
+                    'done': int(float(row['Done']))
+                })
 
-            jira_obj = JiraCountByTime(space_key=team, count_time=time.strftime('%Y-%m-%d', time.localtime(int((to_unix_time(day))))), todo=todo,
-                                       in_progress=in_progress, done=done)
-            jira_obj.save()
+                jira_obj = JiraCountByTime(space_key=team, count_time=time.strftime('%Y-%m-%d', time.localtime(int((to_unix_time(day))))), todo=todo,
+                                            in_progress=in_progress, done=done)
+                jira_obj.save()
 
         resp = init_http_response(
             RespCode.success.value.key, RespCode.success.value.msg)
