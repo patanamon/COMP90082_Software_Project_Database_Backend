@@ -184,7 +184,19 @@ def get_metrics(relation):
     elif metrics == -2:
         resp = init_http_response_my_enum(RespCode.git_config_not_found)
         return make_json_response(resp=resp)
-    elif not GitMetrics.objects.filter(space_key=relation.space_key).exists():
+
+    if GitMetrics.objects.filter(space_key=relation.space_key).exists():
+        GitMetrics.objects.filter(student_name=relation.space_key).update(
+            file_count=metrics['CountDeclFile'],
+            class_count=metrics['CountDeclClass'],
+            function_count=metrics['CountDeclFunction'],
+            code_lines_count=metrics['CountLineCode'],
+            declarative_lines_count=metrics['CountLineCodeDecl'],
+            executable_lines_count=metrics['CountLineCodeExe'],
+            comment_lines_count=metrics['CountLineComment'],
+            comment_to_code_ratio=metrics['RatioCommentToCode'],
+        )
+    else:
         metrics_dto = GitMetrics(
             space_key=relation.space_key,
             file_count=metrics['CountDeclFile'],
@@ -206,4 +218,4 @@ def auto_update_metrics():
 
 utils.start_schedule(auto_update_commits, 60 * 60 * 24, None)
 utils.start_schedule(update_individual_commits, 60 * 60 * 24)
-utils.start_schedule(auto_update_metrics(), 60 * 60 * 24)
+utils.start_schedule(auto_update_metrics, 60 * 60 * 24)
