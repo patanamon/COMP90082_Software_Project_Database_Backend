@@ -7,7 +7,7 @@
 from django.apps import AppConfig
 from atlassian import Jira
 import json
-import time
+import csv
 import datetime
 
 from django.views.decorators.http import require_http_methods
