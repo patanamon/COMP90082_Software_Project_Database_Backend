@@ -9,6 +9,7 @@ from atlassian import Jira
 import json
 import time
 import datetime
+import sys
 
 from math import ceil
 from django.views.decorators.http import require_http_methods
@@ -428,7 +429,7 @@ def get_ticket_count_team_timestamped_from_db(request,team):
 
 
 @require_http_methods(['GET'])
-def auto_get_ticket_count_team_timestamped_1(request):
+def get_ticket_count_team_timestamped_history(request):
     try:
         jira = jira_login(request)
         allProjects = jira.projects()
@@ -458,7 +459,7 @@ def auto_get_ticket_count_team_timestamped(request):
 @require_http_methods(['POST'])
 def setGithubJiraUrl(request):
      try:
-        coordinator_id = '1'
+        coordinator_id = request.session.get('coordinator_id')
         data = json.loads(request.body)
         space_key = data.get("space_key")
         git_url = data.get("git_url")
@@ -526,12 +527,12 @@ def get_jira_cfd(request, team):
         return HttpResponse(data, content_type="image/png")
 
 
-
-from django.http import HttpRequest
-request = HttpRequest()
-request.method = 'GET'
-request.build_absolute_uri
-request.META['SERVER_NAME'] = request.build_absolute_uri
-utils.start_schedule(auto_get_contributions, 60 * 60 * 24, request)
-auto_get_ticket_count_team_timestamped_1(request)
-utils.start_schedule(auto_get_ticket_count_team_timestamped, 60*60*24, request)
+if 'runserver' in sys.argv:
+    from django.http import HttpRequest
+    request = HttpRequest()
+    request.method = 'GET'
+    request.build_absolute_uri
+    request.META['SERVER_NAME'] = request.build_absolute_uri
+    utils.start_schedule(auto_get_contributions, 60 * 60 * 24, request)
+    auto_get_ticket_count_team_timestamped_history(request)
+    utils.start_schedule(auto_get_ticket_count_team_timestamped, 60*60*24, request)
