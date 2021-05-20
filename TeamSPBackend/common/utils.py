@@ -91,6 +91,24 @@ def check_user_login(roles=None):
     return decorator
 
 
+def check_login():
+    """
+    Disable for testing
+    :return:
+    """
+    def decorator(func):
+        @wraps(func)
+        def inner(request, *args, **kwargs):
+            if 'coordinator_id' not in request.session or 'coordinator_name' not in request.session:
+                resp = init_http_response(RespCode.not_logged.value.key, RespCode.not_logged.value.msg)
+                return make_json_response(HttpResponse, resp)
+
+            request.session.set_expiry(SESSION_REFRESH)
+            return func(request, *args, **kwargs)
+        return inner
+    return decorator
+
+
 def check_user_role(func, role):
     """
     Disable for testing

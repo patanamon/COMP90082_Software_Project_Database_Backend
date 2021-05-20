@@ -11,7 +11,7 @@ from .views.subject import subject_router, update_subject, delete_subject
 from .views.team import team_router, get_team_members, team_member_configure, team_configure
 from .views.slack import get_team_data, get_all_member_data, get_member_data
 from TeamSPBackend.api.views.project.project import import_project,login_sso
-from .views.git import get_git_commits, get_git_pr, get_git_individual_commits
+from .views.git import get_git_commits, get_git_pr, get_git_individual_commits, get_git_metrics
 
 
 urlpatterns = [
@@ -52,6 +52,7 @@ urlpatterns = [
     # Git Related API
     path('git/<space_key>/commit_count', get_git_commits),
     path('git/individual_commits/<space_key>', get_git_individual_commits),
+    path('git/metrics/<space_key>', get_git_metrics),
     path('git/pullrequest', get_git_pr),
 
     # Confluence Related API
@@ -70,7 +71,9 @@ urlpatterns = [
     # COMP90082 21 S1 sprint1
     path('confluence/spaces/<key_word>', confluence.get_spaces_by_key),
     path('confluence/<space_key>/meeting_minutes', confluence.get_meeting_minutes),
+
     path('confluence/imported_projects', confluence.get_imported_project),
+
     path('confluence/spaces/<space_key>/page_count', confluence.get_page_count_by_time),
 
     path('sso/login', login_sso),
@@ -87,8 +90,8 @@ urlpatterns = [
     path('jira/<team>/ticket_count', jira.get_ticket_count_team_timestamped),
     path('jira/<team>/contributions', jira.get_contributions),
     path('jira/auto_ticket_count', jira.auto_get_ticket_count_team_timestamped),
-    path('git/config', jira.setGithubJiraUrl),
-    path('git/get_url_db', jira.get_url_from_db),
+    path('jira/<team>/config', jira.setGithubJiraUrl),
+    path('jira/<team>/get_url_db', jira.get_url_from_db),
     path('jira/<team>/get_contribution_db', jira.get_contributions_from_db),
     path('jira/<team>/get_ticket_count_db', jira.get_ticket_count_team_timestamped_from_db),
 

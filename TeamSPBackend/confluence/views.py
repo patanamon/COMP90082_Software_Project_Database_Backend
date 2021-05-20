@@ -1,3 +1,6 @@
+import logging
+
+import atlassian
 import urllib3
 from ..api.views.confluence.confluence import log_into_confluence
 from TeamSPBackend.confluence.models import PageHistory, UserList, IndividualConfluenceContribution, MeetingMinutes
@@ -24,12 +27,18 @@ def update_space_user_list(space_key):
     # a public space.
     permissions = conf.get_space_permissions(space_key)
     # notice that if permissions == {}, that means the user don't have the admin permission to the space.
+    # simply return the users who have contributed to the space
     for permission in permissions:
         for detail in permission["spacePermissions"]:
             user = detail["userName"]
             group = detail["groupName"]
             if user is not None and user not in user_set:
-                user_info = conf.get_user_details_by_username(user)
+                try:
+                    user_info = conf.get_user_details_by_username(user)
+                except atlassian.errors.ApiNotFoundError as e:
+                    logger = logging.getLogger('django')
+                    logger.error(str(e) + " " + user)
+                    continue
                 user_list.append(get_user(user_info, space_key))
                 user_set.add(user)
             if group is not None and group not in group_set:
@@ -44,7 +53,12 @@ def update_space_user_list(space_key):
     if permissions == {}:
         for contribution in IndividualConfluenceContribution.objects.all():
             if contribution.user_id not in user_set:
-                user_info = conf.get_user_details_by_username(contribution.user_id)
+                try:
+                    user_info = conf.get_user_details_by_username(contribution.user_id)
+                except atlassian.errors.ApiNotFoundError as e:
+                    logger = logging.getLogger('django')
+                    logger.error(str(e) + " " + contribution.user_id)
+                    continue
                 user_list.append(get_user(user_info, space_key))
                 user_set.add(contribution.user_id)
     return user_list
@@ -53,22 +67,27 @@ def update_space_user_list(space_key):
 def insert_space_user_list(space_key):
     insert_space_page_contribution(space_key)
     user_list = update_space_user_list(space_key)
-    UserList.objects.bulk_create(user_list)
+    with transaction.atomic():
+        UserList.objects.filter(space_key=space_key).delete()
+        UserList.objects.bulk_create(user_list)
 
 
 def update_user_list():
     update_page_contribution()
     user_list = []
-    for space in ProjectCoordinatorRelation.objects.all():
-        space_key = space.space_key
+    for space_key in get_spaces():
         user_list.extend(update_space_user_list(space_key))
 
     with transaction.atomic():
         UserList.objects.all().delete()
         UserList.objects.bulk_create(user_list)
+        logger = logging.getLogger('django')
+        logger.info("Finish update all user list")
 
 
 def get_user(user, space_key):
+    logger = logging.getLogger('django')
+    logger.info('insert user ' + user['username'] + ' in the space ' + space_key)
     picture_path = "profile_picture/"
     host = "http://18.167.74.23:18000"
     if user["profilePicture"]["path"].endswith("default.svg"):
@@ -154,7 +173,9 @@ def insert_space_meeting(space_key):
 
 def insert_space_page_history(space_key):
     page_history = update_space_page_history(space_key)
-    PageHistory.objects.bulk_create(page_history)
+    with transaction.atomic():
+        PageHistory.objects.filter(space_key=space_key).delete()
+        PageHistory.objects.bulk_create(page_history)
 
 
 def update_space_page_history(space_key):
@@ -199,8 +220,7 @@ def update_space_page_history(space_key):
 
 def update_page_history():
     history_data = []
-    for space in ProjectCoordinatorRelation.objects.all():
-        space_key = space.space_key
+    for space_key in get_spaces():
         history_data.extend(update_space_page_history(space_key))
 
     with transaction.atomic():
@@ -231,6 +251,8 @@ def update_space_page_contribution(space_key):
     for page in results:
         page_contributors = page["history"]["contributors"]["publishers"]["users"]
         for user in page_contributors:
+            if user['username'] == 'admin':
+                continue
             if not user["displayName"] in member_contributions:
                 member_contributions[user["displayName"]] = 0
                 id_name[user["displayName"]] = user["username"]
@@ -251,18 +273,26 @@ def update_space_page_contribution(space_key):
 
 def insert_space_page_contribution(space_key):
     page_contribution = update_space_page_contribution(space_key)
-    IndividualConfluenceContribution.objects.bulk_create(page_contribution)
+    with transaction.atomic():
+        IndividualConfluenceContribution.objects.filter(space_key=space_key).delete()
+        IndividualConfluenceContribution.objects.bulk_create(page_contribution)
 
 
 def update_page_contribution():
     page_contribution = []
-    for space in ProjectCoordinatorRelation.objects.all():
-        space_key = space.space_key
+    for space_key in get_spaces():
         page_contribution.extend(update_space_page_contribution(space_key))
 
     with transaction.atomic():
         IndividualConfluenceContribution.objects.all().delete()
         IndividualConfluenceContribution.objects.bulk_create(page_contribution)
+
+
+def get_spaces():
+    spaces = set()
+    for space in ProjectCoordinatorRelation.objects.all():
+        spaces.add(space.space_key)
+    return spaces
 
 
 utils.start_schedule(update_meeting_minutes, 60 * 60 * 24)  # update meeting minutes on a daily basis
