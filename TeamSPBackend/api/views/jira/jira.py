@@ -362,7 +362,6 @@ def auto_get_contributions(request):
         allProjects = jira.projects()
         for p in allProjects:
             get_contributions(request, p['name'].lower())
-            time.sleep(0.5)
         resp = init_http_response_withoutdata(
             RespCode.success.value.key, RespCode.success.value.msg)
         return HttpResponse(json.dumps(resp), content_type="application/json")
@@ -458,7 +457,7 @@ def auto_get_ticket_count_team_timestamped(request):
 
 @require_http_methods(['POST'])
 def setGithubJiraUrl(request):
-     try:
+     # try:
         coordinator_id = request.session.get('coordinator_id')
         data = json.loads(request.body)
         space_key = data.get("space_key")
@@ -479,9 +478,9 @@ def setGithubJiraUrl(request):
         resp = init_http_response_withoutdata(
              RespCode.success.value.key, RespCode.success.value.msg)
         return HttpResponse(json.dumps(resp), content_type="application/json")
-     except:
-        resp = {'code': -1, 'msg': 'error'}
-        return HttpResponse(json.dumps(resp), content_type="application/json")
+     # except:
+     #    resp = {'code': -1, 'msg': 'error'}
+     #    return HttpResponse(json.dumps(resp), content_type="application/json")
 
 @require_http_methods(['POST'])
 def get_url_from_db(request):
@@ -534,5 +533,5 @@ if 'runserver' in sys.argv:
     request.build_absolute_uri
     request.META['SERVER_NAME'] = request.build_absolute_uri
     utils.start_schedule(auto_get_contributions, 60 * 60 * 24, request)
-    auto_get_ticket_count_team_timestamped_history(request)
-    utils.start_schedule(auto_get_ticket_count_team_timestamped, 60*60*24, request)
+#     auto_get_ticket_count_team_timestamped_history(request)
+#     utils.start_schedule(auto_get_ticket_count_team_timestamped, 60*60*24, request)
