@@ -1,3 +1,6 @@
+import logging
+
+import atlassian
 import urllib3
 from ..api.views.confluence.confluence import log_into_confluence
 from TeamSPBackend.confluence.models import PageHistory, UserList, IndividualConfluenceContribution, MeetingMinutes
@@ -24,12 +27,24 @@ def update_space_user_list(space_key):
     # a public space.
     permissions = conf.get_space_permissions(space_key)
     # notice that if permissions == {}, that means the user don't have the admin permission to the space.
+    # simply return the users who have contributed to the space
     for permission in permissions:
         for detail in permission["spacePermissions"]:
             user = detail["userName"]
             group = detail["groupName"]
             if user is not None and user not in user_set:
-                user_info = conf.get_user_details_by_username(user)
+                try:
+                    user_info = conf.get_user_details_by_username(user)
+                except atlassian.errors.ApiNotFoundError as e:
+                    logger = logging.getLogger('django')
+                    logger.error(e + " " + user)
+                    user_info = {
+                        "username": user,
+                        "displayName": user,
+                        "profilePicture": {
+                            "path": "default.svg"
+                        }
+                    }
                 user_list.append(get_user(user_info, space_key))
                 user_set.add(user)
             if group is not None and group not in group_set:
@@ -44,7 +59,18 @@ def update_space_user_list(space_key):
     if permissions == {}:
         for contribution in IndividualConfluenceContribution.objects.all():
             if contribution.user_id not in user_set:
-                user_info = conf.get_user_details_by_username(contribution.user_id)
+                try:
+                    user_info = conf.get_user_details_by_username(contribution.user_id)
+                except atlassian.errors.ApiNotFoundError as e:
+                    logger = logging.getLogger('django')
+                    logger.error(e + " " + contribution.user_id)
+                    user_info = {
+                        "username": contribution.user_id,
+                        "displayName": contribution.user_id,
+                        "profilePicture": {
+                            "path": "default.svg"
+                        }
+                    }
                 user_list.append(get_user(user_info, space_key))
                 user_set.add(contribution.user_id)
     return user_list
@@ -61,15 +87,14 @@ def insert_space_user_list(space_key):
 def update_user_list():
     update_page_contribution()
     user_list = []
-    for space in ProjectCoordinatorRelation.objects.all():
-        space_key = space.space_key
-        for user in update_space_user_list(space_key):
-            if user not in user_list:
-                user_list.append(user)
+    for space_key in get_spaces():
+        user_list.extend(update_space_user_list(space_key))
 
     with transaction.atomic():
         UserList.objects.all().delete()
         UserList.objects.bulk_create(user_list)
+        logger = logging.getLogger('django')
+        logger.info("Finish update all user list")
 
 
 def get_user(user, space_key):
@@ -205,11 +230,8 @@ def update_space_page_history(space_key):
 
 def update_page_history():
     history_data = []
-    for space in ProjectCoordinatorRelation.objects.all():
-        space_key = space.space_key
-        for history in update_space_page_history(space_key):
-            if history not in history_data:
-                history_data.append(history)
+    for space_key in get_spaces():
+        history_data.extend(update_space_page_history(space_key))
 
     with transaction.atomic():
         PageHistory.objects.all().delete()
@@ -268,15 +290,19 @@ def insert_space_page_contribution(space_key):
 
 def update_page_contribution():
     page_contribution = []
-    for space in ProjectCoordinatorRelation.objects.all():
-        space_key = space.space_key
-        for page in update_space_page_contribution(space_key):
-            if page not in page_contribution:
-                page_contribution.append(page)
+    for space_key in get_spaces():
+        page_contribution.extend(update_space_page_contribution(space_key))
 
     with transaction.atomic():
         IndividualConfluenceContribution.objects.all().delete()
         IndividualConfluenceContribution.objects.bulk_create(page_contribution)
+
+
+def get_spaces():
+    spaces = set()
+    for space in ProjectCoordinatorRelation.objects.all():
+        spaces.add(space.space_key)
+    return spaces
 
 
 utils.start_schedule(update_meeting_minutes, 60 * 60 * 24)  # update meeting minutes on a daily basis
