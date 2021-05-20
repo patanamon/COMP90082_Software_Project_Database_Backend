@@ -37,14 +37,8 @@ def update_space_user_list(space_key):
                     user_info = conf.get_user_details_by_username(user)
                 except atlassian.errors.ApiNotFoundError as e:
                     logger = logging.getLogger('django')
-                    logger.error(e + " " + user)
-                    user_info = {
-                        "username": user,
-                        "displayName": user,
-                        "profilePicture": {
-                            "path": "default.svg"
-                        }
-                    }
+                    logger.error(str(e) + " " + user)
+                    continue
                 user_list.append(get_user(user_info, space_key))
                 user_set.add(user)
             if group is not None and group not in group_set:
@@ -63,14 +57,8 @@ def update_space_user_list(space_key):
                     user_info = conf.get_user_details_by_username(contribution.user_id)
                 except atlassian.errors.ApiNotFoundError as e:
                     logger = logging.getLogger('django')
-                    logger.error(e + " " + contribution.user_id)
-                    user_info = {
-                        "username": contribution.user_id,
-                        "displayName": contribution.user_id,
-                        "profilePicture": {
-                            "path": "default.svg"
-                        }
-                    }
+                    logger.error(str(e) + " " + contribution.user_id)
+                    continue
                 user_list.append(get_user(user_info, space_key))
                 user_set.add(contribution.user_id)
     return user_list
@@ -98,6 +86,8 @@ def update_user_list():
 
 
 def get_user(user, space_key):
+    logger = logging.getLogger('django')
+    logger.info('insert user ' + user['username'] + ' in the space ' + space_key)
     picture_path = "profile_picture/"
     host = "http://18.167.74.23:18000"
     if user["profilePicture"]["path"].endswith("default.svg"):
@@ -261,6 +251,8 @@ def update_space_page_contribution(space_key):
     for page in results:
         page_contributors = page["history"]["contributors"]["publishers"]["users"]
         for user in page_contributors:
+            if user['username'] == 'admin':
+                continue
             if not user["displayName"] in member_contributions:
                 member_contributions[user["displayName"]] = 0
                 id_name[user["displayName"]] = user["username"]
@@ -268,8 +260,6 @@ def update_space_page_contribution(space_key):
 
     page_contribution = []
     for user_name in member_contributions:
-        if user_name == 'admin':
-            continue
         page_count = member_contributions[user_name]
         page_contribution.append(IndividualConfluenceContribution(
             space_key=space_key,
