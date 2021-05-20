@@ -4,6 +4,7 @@ import os
 import logging
 import re
 import sys
+import time
 
 from TeamSPBackend.settings.base_setting import BASE_DIR
 from TeamSPBackend.project.models import ProjectCoordinatorRelation
@@ -187,20 +188,26 @@ def get_pull_request(repo, author=None, branch=None, after=None, before=None):
         commits.append(commit)
     return commits
 
+
 def get_und_metrics(repo, space_key):
     state = pull_repo(repo, space_key)
     if state == -1 or state == -2:
         return state
-    und_file = construct_certification(repo, space_key) + '.und'
+    und_file = convert(repo) + '.und'
     path = REPO_PATH + convert(repo)
     und_metrics = UND_METRICS.format(und_file, path, und_file)
-    logger.info('[Understand] File: {} Executing: {}'.format(und_file, und_metrics))
+    logger.info('[Understand] File {} Executing: {}'.format(und_file, und_metrics))
+    st_time = time.time()
     os.system(und_metrics)
+
     # open a project und
     udb = understand.open(und_file)
     # get all project metrics
     metrics = udb.metric(udb.metrics())
-    logger.info('[Understand] {} get Metrics: {} '.format(und_file, metrics))
+
+    end_time = time.time()
+    cost_time = round(end_time - st_time, 2)
+    logger.info('[Understand] File {} Get Metrics: {} , cost : {} seconds'.format(und_file, metrics,cost_time))
     return metrics
 
 # if __name__ == '__main__':
