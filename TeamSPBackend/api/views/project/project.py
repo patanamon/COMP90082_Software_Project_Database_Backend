@@ -11,13 +11,13 @@ import logging
 from TeamSPBackend.common.choices import RespCode
 from TeamSPBackend.coordinator.models import Coordinator
 from TeamSPBackend.project.models import ProjectCoordinatorRelation
-from TeamSPBackend.common.utils import init_http_response
+from TeamSPBackend.common.utils import init_http_response, check_login
 from threading import Timer
 from TeamSPBackend.confluence.views import insert_space_user_list, insert_space_page_contribution, insert_space_page_history, insert_space_meeting
 
 
 @require_http_methods(['POST'])
-# @check_body
+@check_login()
 def import_project(request, *args, **kwargs):
     # Method: POST
     start = time.time()
