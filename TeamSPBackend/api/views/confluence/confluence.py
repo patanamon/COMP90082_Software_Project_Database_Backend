@@ -6,7 +6,7 @@ from requests.auth import HTTPBasicAuth
 from TeamSPBackend.common.choices import RespCode
 from django.views.decorators.http import require_http_methods
 from django.http.response import HttpResponse
-from TeamSPBackend.common.utils import init_http_response
+from TeamSPBackend.common.utils import init_http_response, check_login
 from TeamSPBackend.confluence.models import UserList
 from TeamSPBackend.confluence.models import MeetingMinutes
 
@@ -292,6 +292,7 @@ def get_members(request, group):
 
 
 @require_http_methods(['GET'])
+@check_login()
 def get_spaces_by_key(request, key_word):
     """Get a list of Confluence space keys that contains the key word
     Method: GET
@@ -316,6 +317,7 @@ def get_spaces_by_key(request, key_word):
 
 
 @require_http_methods(['GET'])
+@check_login()
 def get_user_list(request, space_key):
     """Get the user list in a Confluence space
     Method: Get
@@ -342,6 +344,7 @@ def get_user_list(request, space_key):
 
       
 @require_http_methods(['GET'])
+@check_login()
 def get_meeting_minutes(request, space_key):
     """
         return all the meeting minutes titles and links from the specific confluence space
@@ -372,6 +375,7 @@ def get_meeting_minutes(request, space_key):
 
       
 @require_http_methods(['GET'])
+@check_login()
 def get_page_count_by_time(request, space_key):
     """Get a list of time, page count pairs.
     From this space is created, to the date this method is called, one a daily basis.
@@ -397,6 +401,7 @@ def get_page_count_by_time(request, space_key):
 
 
 @require_http_methods(['GET'])
+@check_login()
 def get_imported_project(request):
     """
     get the imported projects
@@ -433,6 +438,7 @@ def get_imported_project(request):
 
 
 @require_http_methods(['POST'])
+@check_login()
 def delete_project(request, *args, **kwargs):
     try:
         # delete space key that is imported by the coordinator.

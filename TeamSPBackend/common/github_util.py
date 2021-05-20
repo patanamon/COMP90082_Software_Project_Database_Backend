@@ -3,6 +3,8 @@
 import os
 import logging
 import re
+import sys
+import time
 
 from TeamSPBackend.settings.base_setting import BASE_DIR
 from TeamSPBackend.project.models import ProjectCoordinatorRelation
@@ -23,6 +25,21 @@ GIT_LOG_AFTER = ' --after={}'
 GIT_LOG_BEFORE = ' --before={}'
 GIT_LOG_PATH = ' --> {}'
 
+# using Understand for analyze Metrics
+# For Mac
+# UND_PATH = '/Applications/Understand.app/Contents/MacOS/'
+# For Linux Server
+UND_PATH = '~/comp90082sp/understand/scitools/bin/linux64/'
+sys.path.append(UND_PATH)
+sys.path.append(UND_PATH+'Python')
+import understand
+
+# set Understand License
+UND_LICENSE = 'und -setlicensecode XfA7YbMwUZ9OCYJd'
+os.system(UND_LICENSE)
+
+# understand und command line for loading a git repo and generate metrics
+UND_METRICS = UND_PATH + 'und create -db {} -languages python C++ Java add {} {} analyze'
 
 def construct_certification(repo, space_key):
     user_info = ProjectCoordinatorRelation.objects.filter(space_key=space_key)
@@ -170,6 +187,29 @@ def get_pull_request(repo, author=None, branch=None, after=None, before=None):
         )
         commits.append(commit)
     return commits
+
+
+def get_und_metrics(repo, space_key):
+    state = pull_repo(repo, space_key)
+    if state == -1 or state == -2:
+        return state
+    und_file = convert(repo) + '.und'
+    path = REPO_PATH + convert(repo)
+    und_metrics = UND_METRICS.format(und_file, path, und_file)
+    logger.info('[Understand] File {} Executing: {}'.format(und_file, und_metrics))
+    st_time = time.time()
+    os.system(und_metrics)
+
+    # open a project und
+    udb = understand.open(und_file)
+    # get all project metrics
+    metrics = udb.metric(udb.metrics())
+
+    end_time = time.time()
+    cost_time = round(end_time - st_time, 2)
+    logger.info('[Understand] File {} Get Metrics: {} , cost : {} seconds'.format(und_file, metrics,cost_time))
+    return metrics
+
 # if __name__ == '__main__':
 #     init_git()
 #     pull_repo('https://github.com/LikwunCheung/TeamSPBackend')
