@@ -63,7 +63,9 @@ def update_user_list():
     user_list = []
     for space in ProjectCoordinatorRelation.objects.all():
         space_key = space.space_key
-        user_list.extend(update_space_user_list(space_key))
+        for user in update_space_user_list(space_key):
+            if user not in user_list:
+                user_list.append(user)
 
     with transaction.atomic():
         UserList.objects.all().delete()
@@ -205,7 +207,9 @@ def update_page_history():
     history_data = []
     for space in ProjectCoordinatorRelation.objects.all():
         space_key = space.space_key
-        history_data.extend(update_space_page_history(space_key))
+        for history in update_space_page_history(space_key):
+            if history not in history_data:
+                history_data.append(history)
 
     with transaction.atomic():
         PageHistory.objects.all().delete()
@@ -266,7 +270,9 @@ def update_page_contribution():
     page_contribution = []
     for space in ProjectCoordinatorRelation.objects.all():
         space_key = space.space_key
-        page_contribution.extend(update_space_page_contribution(space_key))
+        for page in update_space_page_contribution(space_key):
+            if page not in page_contribution:
+                page_contribution.append(page)
 
     with transaction.atomic():
         IndividualConfluenceContribution.objects.all().delete()
