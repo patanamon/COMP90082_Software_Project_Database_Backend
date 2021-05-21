@@ -194,6 +194,8 @@ def get_und_metrics(repo, space_key):
     if state == -1 or state == -2:
         return state
     und_file = convert(repo) + '.und'
+    # bug-fixed: keep the same with  pull_repo()
+    repo = construct_certification(repo, space_key)
     path = REPO_PATH + convert(repo)
     und_metrics = UND_METRICS.format(und_file, path, und_file)
     logger.info('[Understand] File {} Executing: {}'.format(und_file, und_metrics))
