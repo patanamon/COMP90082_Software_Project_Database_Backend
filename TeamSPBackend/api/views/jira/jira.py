@@ -9,7 +9,9 @@ from atlassian import Jira
 import json
 import time
 import datetime
+import sys
 
+from math import ceil
 from django.views.decorators.http import require_http_methods
 from django.http.response import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
@@ -18,6 +20,7 @@ import os
 import time
 from dateutil import parser
 
+from TeamSPBackend.common import utils
 from TeamSPBackend.common.choices import RespCode
 from TeamSPBackend.common.utils import init_http_response
 from TeamSPBackend.common.utils import init_http_response_withoutdata
@@ -60,19 +63,27 @@ def get_project_key(project, jira):
     for d in jira_resp:
         if d['name'].lower() == project:
             result = d['key']
+
     return result
 
-
-def get_member_names(project_key, jira):
-    """"Get team members with project key"""
-    jira_resp = jira.get_all_assignable_users_for_project(project_key)
-    name = []
-    display_name = []
-    for d in jira_resp:
-        name.append(d['name'])
-        display_name.append(d['displayName'])
-
-    return name, display_name
+def get_done_contributor_names(team, jira):
+    """Get contributors (name, displayName) list of a project"""
+    data = []
+    total = jira.jql('project = "' + team + '" AND Status = Done', limit=0)['total']  # get total issue count
+    for i in range(ceil(total / 100)):  # recurring query if count > 100
+        start = 0 + i * 100
+        data.append(jira.jql('project = ' + team + ' AND Status = Done', start=start, limit=100)['issues'])
+    data = [issue for subdata in data for issue in subdata]  # flatten
+    name_lst = []
+    display_name_lst = []
+    for i in range(len(data)):
+        result = data[i]['fields']['assignee']
+        if result is not None:
+            if result['name'] not in name_lst:
+                name_lst.append(result['name'])
+            if result['displayName'] not in display_name_lst:
+                display_name_lst.append(result['displayName'])
+    return name_lst, display_name_lst
 
 
 def datetime_truncate(t):
@@ -262,23 +273,28 @@ def get_ticket_count_team_timestamped(request, team):
      try:
         jira = jira_login(request)
 
-        jquery = jira.jql('project = ' + team + ' ORDER BY created ASC')['issues'][0]['fields']['created']
+        jquery = jira.jql('project = "' + team + '" ORDER BY created ASC')['issues'][0]['fields']['created']
 
         # parses to datetime object
         jquery = parser.parse(jquery)
 
         d0 = datetime_truncate(jquery)
         today = datetime.date.today()
+        yesterday = datetime.date.today() -datetime.timedelta(1)
 
-        delta = today - d0
+        lastMonth = today - datetime.timedelta(30)
 
-        date_list = [today - datetime.timedelta(days=x) for x in range(delta.days)]
+        if lastMonth<d0:
+            delta = yesterday - d0
+        else:
+            delta = yesterday -lastMonth
 
+        date_list = [yesterday - datetime.timedelta(days=x) for x in range(delta.days)]
         data = []
         for day in reversed(date_list):
-            todo = jira.jql('project = ' + team + ' AND status WAS "To Do" ON ' + str(day), limit=0)['total']
-            in_progress = jira.jql('project = ' + team + ' AND status WAS "In Progress" ON ' + str(day), limit=0)['total']
-            done = jira.jql('project = ' + team + ' AND status WAS "Done" ON ' + str(day), limit=0)['total']
+            todo = jira.jql('project = "' + team + '" AND status WAS "To Do" ON ' + str(day), limit=0)['total']
+            in_progress = jira.jql('project = "' + team + '" AND status WAS "In Progress" ON ' + str(day), limit=0)['total']
+            done = jira.jql('project = "' + team + '" AND status WAS "Done" ON ' + str(day), limit=0)['total']
             #print(day, todo, in_progress, done)
             data.append({
                 'time': to_unix_time(day),
@@ -312,11 +328,11 @@ def get_contributions(request, team):
     try:
         jira = jira_login(request)
 
-        students, names = get_member_names(get_project_key(team, jira), jira)
+        students, names = get_done_contributor_names(get_project_key(team, jira), jira)
         count = []
         for student in students:
-            count.append(jira.jql('assignee = ' + student + ' AND project = '
-                                  + team + ' AND status = "Done"')['total'])
+            count.append(jira.jql('assignee = ' + student + ' AND project = "'
+                                  + team + '" AND status = "Done"')['total'])
         result = dict(zip(names, count))
 
         data = []
@@ -325,12 +341,29 @@ def get_contributions(request, team):
                 'student': name,
                 'done_count': count
             })
-            jira_obj = IndividualContributions(space_key=team,student=name, done_count=count)
-            jira_obj.save()
+            if IndividualContributions.objects.filter(space_key=team, student=name).exists():
+                IndividualContributions.objects.filter(space_key=team, student=name).update(done_count = count)
+            else:
+                jira_obj = IndividualContributions(space_key=team,student=name, done_count=count)
+                jira_obj.save()
 
         resp = init_http_response(
             RespCode.success.value.key, RespCode.success.value.msg)
         resp['data'] = data
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+    except:
+        resp = {'code': -1, 'msg': 'error'}
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+
+@require_http_methods(['GET'])
+def auto_get_contributions(request):
+    jira = jira_login(request)
+    try:
+        allProjects = jira.projects()
+        for p in allProjects:
+            get_contributions(request, p['name'].lower())
+        resp = init_http_response_withoutdata(
+            RespCode.success.value.key, RespCode.success.value.msg)
         return HttpResponse(json.dumps(resp), content_type="application/json")
     except:
         resp = {'code': -1, 'msg': 'error'}
@@ -358,9 +391,9 @@ def get_ticket_count_team_timestamped_afterthefirstrun(request, team):
     try:
         jira = jira_login(request)
 
-        todo = jira.jql('project = ' + team + ' AND status = "To Do"', limit=0)['total']
-        in_progress = jira.jql('project = ' + team + ' AND status = "In Progress"', limit=0)['total']
-        done = jira.jql('project = ' + team + ' AND status = "Done"', limit=0)['total']
+        todo = jira.jql('project = "' + team + '" AND status = "To Do"', limit=0)['total']
+        in_progress = jira.jql('project = "' + team + '" AND status = "In Progress"', limit=0)['total']
+        done = jira.jql('project = "' + team + '" AND status = "Done"', limit=0)['total']
         data = {
             'time': time.strftime('%Y-%m-%d', time.localtime(to_unix_time(datetime.date.today()))),
             'to_do': todo,
@@ -395,26 +428,37 @@ def get_ticket_count_team_timestamped_from_db(request,team):
 
 
 @require_http_methods(['GET'])
+def get_ticket_count_team_timestamped_history(request):
+    try:
+        jira = jira_login(request)
+        allProjects = jira.projects()
+        for p in allProjects:
+            get_ticket_count_team_timestamped(request, p['name'].lower())
+
+        resp = 'success!'
+        return HttpResponse(resp, content_type="application/json")
+    except:
+        resp = {'code': -1, 'msg': 'error'}
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+
+@require_http_methods(['GET'])
 def auto_get_ticket_count_team_timestamped(request):
-     jira = jira_login(request)
-     allProjects = jira.projects()
-     for p in allProjects:
-        # first run, fetch all the records from the date the project is created
-        get_ticket_count_team_timestamped(request, p['name'])
-
-     time.sleep(60 * 60 * 24)
-     for p in allProjects:
-        start_schedule(get_ticket_count_team_timestamped_afterthefirstrun, 60 * 60 * 24, request, p['name'])
-
-     resp = 'success!'
-     return HttpResponse(resp, content_type="application/json")
+     try:
+         jira = jira_login(request)
+         allProjects = jira.projects()
+         for p in allProjects:
+            get_ticket_count_team_timestamped_afterthefirstrun(request, p['name'].lower())
+         resp = 'success!'
+         return HttpResponse(resp, content_type="application/json")
+     except:
+         resp = {'code': -1, 'msg': 'error'}
+         return HttpResponse(json.dumps(resp), content_type="application/json")
 
 
 @require_http_methods(['POST'])
 def setGithubJiraUrl(request):
-     try:
-        coordinator_id = '1'
-        coordinator_name = 'peter'
+     # try:
+        coordinator_id = request.session.get('coordinator_id')
         data = json.loads(request.body)
         space_key = data.get("space_key")
         git_url = data.get("git_url")
@@ -425,21 +469,18 @@ def setGithubJiraUrl(request):
         existURLRecord = ProjectCoordinatorRelation.objects.get(coordinator_id=coordinator_id,space_key=space_key)
         existURLRecord.git_url=git_url
         existURLRecord.jira_project=jira_url
+        existURLRecord.git_username = git_username
+        existURLRecord.git_password = git_password
         existURLRecord.save()
-
-        existCoordinatorRecord = Coordinator.objects.get(coordinator_name=coordinator_name)
-        existCoordinatorRecord.git_username = git_username
-        existCoordinatorRecord.git_password = git_password
-        existCoordinatorRecord.save()
 
         auto_update_commits(space_key)  # after setting git config, try to update git_commit table at once
 
         resp = init_http_response_withoutdata(
              RespCode.success.value.key, RespCode.success.value.msg)
         return HttpResponse(json.dumps(resp), content_type="application/json")
-     except:
-        resp = {'code': -1, 'msg': 'error'}
-        return HttpResponse(json.dumps(resp), content_type="application/json")
+     # except:
+     #    resp = {'code': -1, 'msg': 'error'}
+     #    return HttpResponse(json.dumps(resp), content_type="application/json")
 
 @require_http_methods(['POST'])
 def get_url_from_db(request):
@@ -456,7 +497,6 @@ def get_url_from_db(request):
     except:
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
-
 
 # Legacy APIs, not working
 
@@ -486,3 +526,12 @@ def get_jira_cfd(request, team):
         return HttpResponse(data, content_type="image/png")
 
 
+if 'runserver' in sys.argv:
+    from django.http import HttpRequest
+    request = HttpRequest()
+    request.method = 'GET'
+    request.build_absolute_uri
+    request.META['SERVER_NAME'] = request.build_absolute_uri
+    utils.start_schedule(auto_get_contributions, 60 * 60 * 24, request)
+#     auto_get_ticket_count_team_timestamped_history(request)
+#     utils.start_schedule(auto_get_ticket_count_team_timestamped, 60*60*24, request)
