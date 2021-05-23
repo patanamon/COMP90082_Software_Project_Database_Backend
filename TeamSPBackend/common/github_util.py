@@ -33,6 +33,7 @@ UND_PATH = '/home/ec2-user/comp90082sp/understand/scitools/bin/linux64/'
 sys.path.append(UND_PATH)
 sys.path.append(UND_PATH+'Python')
 import understand
+import threading
 
 # set Understand License
 UND_LICENSE = 'und -setlicensecode XfA7YbMwUZ9OCYJd'
@@ -189,6 +190,20 @@ def get_pull_request(repo, author=None, branch=None, after=None, before=None):
     return commits
 
 
+def understand(und_file, path):
+    und_metrics = UND_METRICS.format(und_file, path, und_file)
+    logger.info('[Understand] File {} Executing: {}'.format(und_file, und_metrics))
+    st_time = time.time()
+    os.system(und_metrics)
+    # open a project und
+    udb = understand.open(und_file)
+    # get all project metrics
+    metrics = udb.metric(udb.metrics())
+    end_time = time.time()
+    cost_time = round(end_time - st_time, 2)
+    logger.info('[Understand] File {} Get Metrics: {} , cost : {} seconds'.format(und_file, metrics,cost_time))
+    return metrics
+
 def get_und_metrics(repo, space_key):
     state = pull_repo(repo, space_key)
     if state == -1 or state == -2:
@@ -197,19 +212,11 @@ def get_und_metrics(repo, space_key):
     # bug-fixed: keep the same with  pull_repo()
     repo = construct_certification(repo, space_key)
     path = REPO_PATH + convert(repo)
-    und_metrics = UND_METRICS.format(und_file, path, und_file)
-    logger.info('[Understand] File {} Executing: {}'.format(und_file, und_metrics))
-    st_time = time.time()
-    os.system(und_metrics)
 
-    # open a project und
-    udb = understand.open(und_file)
-    # get all project metrics
-    metrics = udb.metric(udb.metrics())
-
-    end_time = time.time()
-    cost_time = round(end_time - st_time, 2)
-    logger.info('[Understand] File {} Get Metrics: {} , cost : {} seconds'.format(und_file, metrics,cost_time))
+    und_thread = threading.Thread(target=understand, args=(und_file, path))
+    und_thread.start()
+    und_thread.join()
+    metrics = und_thread.get_result()
     return metrics
 
 # if __name__ == '__main__':

@@ -12,7 +12,8 @@ from TeamSPBackend.common.utils import make_json_response, check_user_login, bod
 from TeamSPBackend.project.models import ProjectCoordinatorRelation
 import time, datetime
 from TeamSPBackend.common.utils import transformTimestamp
-
+import logging
+logger = logging.getLogger('django')
 
 def update_individual_commits():
     for relation in ProjectCoordinatorRelation.objects.all():
@@ -161,6 +162,7 @@ def first_crawler(commits, space_key):
 
 
 def get_metrics(relation):
+    logger.info('[get_metrics] relation: {} '.format(str(relation)))
     data = {
         "url": relation.git_url
     }
