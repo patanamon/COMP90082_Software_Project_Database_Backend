@@ -51,7 +51,7 @@ def update_space_user_list(space_key):
     # if the robot account don't have admin permission, simply return the list of users that made contributions to
     # the space.
     if permissions == {}:
-        for contribution in IndividualConfluenceContribution.objects.all():
+        for contribution in IndividualConfluenceContribution.objects.filter(space_key=space_key):
             if contribution.user_id not in user_set:
                 try:
                     user_info = conf.get_user_details_by_username(contribution.user_id)
