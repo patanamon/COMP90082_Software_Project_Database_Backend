@@ -182,7 +182,7 @@ def get_git_metrics(request, space_key):
     # Case 2: if git_metrics table does not contain this space_key, get it using get_metrics()
     else:
         if ProjectCoordinatorRelation.objects.filter(space_key=space_key).exists():
-            relation_data = ProjectCoordinatorRelation.objects.filter(space_key=space_key)
+            relation_data = ProjectCoordinatorRelation.objects.filter(space_key=space_key)[0]
             get_metrics(relation_data)
             metrics_data = GitMetrics.objects.filter(space_key=space_key)
         # Case 3: if space_key is invalid, return None
