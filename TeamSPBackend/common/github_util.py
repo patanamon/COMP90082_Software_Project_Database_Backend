@@ -29,7 +29,7 @@ GIT_LOG_PATH = ' --> {}'
 # For Mac
 # UND_PATH = '/Applications/Understand.app/Contents/MacOS/'
 # For Linux Server
-UND_PATH = '~/comp90082sp/understand/scitools/bin/linux64/'
+UND_PATH = '/home/ec2-user/comp90082sp/understand/scitools/bin/linux64/'
 sys.path.append(UND_PATH)
 sys.path.append(UND_PATH+'Python')
 import understand
