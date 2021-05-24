@@ -61,7 +61,7 @@ def get_git_commits(request, space_key):
             relation_data = ProjectCoordinatorRelation.objects.filter(space_key=space_key)[0]
             git_dto = construct_url(relation_data)
             if not git_dto.valid_url:
-                resp = init_http_response_my_enum(RespCode.invalid_parameter)
+                resp = init_http_response_my_enum(RespCode.no_repository)
                 return make_json_response(resp=resp)
             commits = get_commits(relation_data.git_url, space_key, None, None, None, None)
             if commits is None:
@@ -154,7 +154,7 @@ def get_git_pr(request, body, *args, **kwargs):
     body_extract(body, git_dto)
 
     if not git_dto.valid_url:
-        resp = init_http_response_my_enum(RespCode.invalid_parameter)
+        resp = init_http_response_my_enum(RespCode.no_repository)
         return make_json_response(resp=resp)
     git_dto.url = git_dto.url.lstrip('$')
 

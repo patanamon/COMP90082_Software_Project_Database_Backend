@@ -37,6 +37,7 @@ class RespCode(MyEnum):
     confluence_api_error = Choice(-11, "confluence python api error")
     config_not_found = Choice(-12, "confluence config file not found")
     user_not_found = Choice(-2, "no such user")
+    no_repository = Choice(-2, "Repository doesn't exist")
     git_config_not_found = Choice(-3, "no validate git credential")
     invalid_authentication = Choice(-4, "Git authentication failed, please check git credential")
 
