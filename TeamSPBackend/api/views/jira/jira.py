@@ -473,7 +473,7 @@ def setGithubJiraUrl(request):
         existURLRecord.git_password = git_password
         existURLRecord.save()
 
-        auto_update_commits(space_key)  # after setting git config, try to update git_commit table at once
+        # auto_update_commits(space_key)  # after setting git config, try to update git_commit table at once
 
         resp = init_http_response_withoutdata(
              RespCode.success.value.key, RespCode.success.value.msg)
