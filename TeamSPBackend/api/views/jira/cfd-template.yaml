@@ -1,0 +1,17 @@
+Connection:
+    Domain: jirainstance 
+    Username: usernameplace
+    Password: passwordplace
+
+Query: Project= projectplace
+
+Workflow: 
+    To Do: To Do
+    In Progress: In Progress
+    Done: Done
+
+Output:
+
+    CFD data: cfd.csv
+    CFD chart: cfd.png
+    CFD chart title: Cumulative Flow Diagram
