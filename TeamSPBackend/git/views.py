@@ -70,7 +70,7 @@ def auto_update_commits(space_key):
     # if space_key not None means user update their configuration, and it will update database at once
     if space_key is not None:
         if not GitCommitCounts.objects.filter(space_key=space_key).exists():
-            relation = ProjectCoordinatorRelation.objects.filter(space_key=space_key)
+            relation = ProjectCoordinatorRelation.objects.filter(space_key=space_key)[0]
             git_dto = construct_url(relation)
             if not git_dto.valid_url:
                 return
