@@ -108,13 +108,25 @@ def key_extracter(d):
             '((http|https)\:\/\/)?[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z]){2,6}([a-zA-Z0-9\.\&\/\?\:@\-_=#])*')
         if re.match(url_re, s):
             if s[-1] == '/':
-                s = s.rsplit('/', 2)[1].lower()
+                s = s.rsplit('/', 3)[1].lower()
                 s = s.split('?')[0]
             else:
-                s = s.rsplit('/', 1)[1].lower()
-                s = s.split('?')[0]
+                s = s.rsplit('/', 2)[1].lower()
+                s = s.split('/')[0]
         return s
     return {k: url_to_key(v) for k, v in d.items()}
+
+def key_extracter2(s):
+    url_re = re.compile(
+        '((http|https)\:\/\/)?[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z]){2,6}([a-zA-Z0-9\.\&\/\?\:@\-_=#])*')
+    if re.match(url_re,s):
+        if s[-1] == '/':
+            s = s.rsplit('/', 3)[1].lower()
+            s = s.split('?')[0]
+        else:
+            s = s.rsplit('/', 2)[1].lower()
+            s = s.split('?')[0]
+    return s
 
 
 # Legacy APIs
@@ -321,10 +333,13 @@ def auto_get_ticket_count_team_timestamped(request):
         return HttpResponse(json.dumps(resp), content_type="application/json")
 
 
-def update_ticket_count_team_timestamped(team):
+def update_ticket_count_team_timestamped(jira_url):
     username = atl_username
     password = atl_password
+    team = get_url_from_db(jira_url)
+
     jira_analytics(username, password, team)
+
     data = []
     with open('TeamSPBackend/api/views/jira/cfd_modified.csv', newline='') as csv_file:
         reader = csv.DictReader(csv_file)
@@ -344,7 +359,7 @@ def update_ticket_count_team_timestamped(team):
                                            done=int(float(row['Done'])))
                 jira_obj.save()
 
-        return data
+        return team
 
 
 @require_http_methods(['GET'])
@@ -412,8 +427,9 @@ def get_contributions_from_db(request, team):
 
 @require_http_methods(['POST'])
 def setGithubJiraUrl(request):
-    try:
-        coordinator_id = request.session.get('coordinator_id')
+    # try:
+        # coordinator_id = request.session.get('coordinator_id')
+        coordinator_id = '1'
         data = json.loads(request.body)
         space_key = data.get("space_key")
         git_url = data.get("git_url")
@@ -430,14 +446,14 @@ def setGithubJiraUrl(request):
 
         # auto_update_commits(space_key)  # after setting git config, try to update git_commit table at once
         update_ticket_count_team_timestamped(
-            space_key)  # after setting jira config, try to update jira_count_by_time table at once
+            jira_url)  # after setting jira config, try to update jira_count_by_time table at once
 
         resp = init_http_response_withoutdata(
             RespCode.success.value.key, RespCode.success.value.msg)
         return HttpResponse(json.dumps(resp), content_type="application/json")
-    except Exception:
-        resp = {'code': -1, 'msg': 'error'}
-        return HttpResponse(json.dumps(resp), content_type="application/json")
+    # except Exception:
+    #     resp = {'code': -1, 'msg': 'error'}
+    #     return HttpResponse(json.dumps(resp), content_type="application/json")
 
 
 @require_http_methods(['GET'])
@@ -470,6 +486,10 @@ def get_all_url_from_db():
         allURL.append(jira_url)
     return allURL
 
+def get_url_from_db(jira_url):
+    record = key_extracter2(jira_url)
+    return record
+
 
 def jira_analytics(username, password, team):
     """Only queries cfd with jira-agile-metrics"""
@@ -499,6 +519,7 @@ def jira_analytics(username, password, team):
                 outfile.write(line)
 
 
+
 if 'runserver' in sys.argv:
     from django.http import HttpRequest
 
@@ -506,5 +527,5 @@ if 'runserver' in sys.argv:
     request.method = 'GET'
     request.build_absolute_uri
     request.META['SERVER_NAME'] = request.build_absolute_uri
-    utils.start_schedule(auto_get_contributions, 60 * 60 * 24, request)
-    utils.start_schedule(auto_get_ticket_count_team_timestamped, 60 * 60 * 24, request)
+    # utils.start_schedule(auto_get_contributions, 60 * 60 * 24, request)
+    # utils.start_schedule(auto_get_ticket_count_team_timestamped, 60 * 60 * 24, request)
