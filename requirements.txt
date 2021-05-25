@@ -28,4 +28,4 @@ slackclient==2.8.2
 PyYAML~=5.3.1
 pyOpenSSL==20.0.1
 gitpython==3.1.9
-
+jira-agile-metrics==0.24

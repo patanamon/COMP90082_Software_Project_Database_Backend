@@ -1,20 +1,18 @@
-# TODO: space_key is not used in jira, clarification required, currently we use Project in JQL
-# TODO: illegal value assignments in legacy code, specifically response only have data field.
-# TODO: Re-adapt to fit legacy API documentation, include: variable rename, django app integration
-# TODO: Specify except statement to avoid accidental termination
-# TODO: django app integration
-# TODO: charts output
 from django.apps import AppConfig
 from atlassian import Jira
 import json
 import time
 import datetime
 import sys
+import re
+import csv
 
 from math import ceil
 from django.views.decorators.http import require_http_methods
 from django.http.response import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
+from shutil import copyfile
+import fileinput
 # for file op
 import os
 import time
@@ -42,6 +40,7 @@ def session_interpreter(request):
     password = user['atl_password']
     return username, password
 
+
 def jira_login(request):
     """ Handles Jira login"""
     # username, password = session_interpreter(request)
@@ -51,7 +50,7 @@ def jira_login(request):
         url='https://jira.cis.unimelb.edu.au:8444',
         username=username,
         password=password,
-        verify_ssl=False
+        # verify_ssl=False # not required with ssl mitigation
     )
     return jira
 
@@ -66,6 +65,7 @@ def get_project_key(project, jira):
 
     return result
 
+
 def get_done_contributor_names(team, jira):
     """Get contributors (name, displayName) list of a project"""
     data = []
@@ -73,7 +73,7 @@ def get_done_contributor_names(team, jira):
     for i in range(ceil(total / 100)):  # recurring query if count > 100
         start = 0 + i * 100
         data.append(jira.jql('project = ' + team + ' AND Status = Done', start=start, limit=100)['issues'])
-    data = [issue for subdata in data for issue in subdata]  # flatten
+    data = [issue for data_slice in data for issue in data_slice]  # flatten
     name_lst = []
     display_name_lst = []
     for i in range(len(data)):
@@ -96,6 +96,25 @@ def datetime_truncate(t):
 def to_unix_time(day):
     """returns unix timestamp from truncated datetime object """
     return time.mktime(datetime.datetime.strptime(str(day), "%Y-%m-%d").timetuple())
+
+
+def key_extracter(d):
+    """Converts dict of jira url to jira key
+    Usage: [key_extracter(d) for e in list(djangoresult)]
+    """
+    def url_to_key(s):
+        """Converts possible URLs to jira team key"""
+        url_re = re.compile(
+            '((http|https)\:\/\/)?[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z]){2,6}([a-zA-Z0-9\.\&\/\?\:@\-_=#])*')
+        if re.match(url_re, s):
+            if s[-1] == '/':
+                s = s.rsplit('/', 2)[1].lower()
+                s = s.split('?')[0]
+            else:
+                s = s.rsplit('/', 1)[1].lower()
+                s = s.split('?')[0]
+        return s
+    return {k: url_to_key(v) for k, v in d.items()}
 
 
 # Legacy APIs
@@ -128,7 +147,7 @@ def get_issues_individual(request, team, student):
             RespCode.success.value.key, RespCode.success.value.msg)
         resp['data'] = data
         return HttpResponse(json.dumps(resp), content_type="application/json")
-    except:
+    except Exception:
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
 
@@ -157,7 +176,7 @@ def get_issues_team(request, team):
             RespCode.success.value.key, RespCode.success.value.msg)
         resp['data'] = data
         return HttpResponse(json.dumps(resp), content_type="application/json")
-    except:
+    except Exception:
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
 
@@ -175,7 +194,7 @@ def get_comment_count_individual(request, team, student):
         resp['username'] = student
         resp['comments'] = count / 16
         return HttpResponse(json.dumps(resp), content_type="application/json")
-    except:
+    except Exception:
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
 
@@ -232,7 +251,7 @@ def get_sprints_dates(request, team):
         else:
             resp['sprint_4_end'] = "null"
         return HttpResponse(json.dumps(resp), content_type="application/json")
-    except:
+    except Exception:
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
 
@@ -261,70 +280,76 @@ def get_issues_per_sprint(request, team):
             resp[i] = count_issues_total
             i += 1
         return HttpResponse(json.dumps(resp), content_type="application/json")
-    except:
+    except Exception:
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
 
 
 # New APIs
 @require_http_methods(['GET'])
-def get_ticket_count_team_timestamped(request, team):
-     """ Return a HttpResponse, data contains 3 kinds of issues timestamped with unix time of each day"""
-     try:
-        jira = jira_login(request)
+def auto_get_ticket_count_team_timestamped(request):
+    """ Return a HttpResponse, data contains 3 kinds of issues timestamped with unix time of each day"""
+    try:
+        teamList = get_all_url_from_db()
+        username = atl_username
+        password = atl_password
+        for i in range(len(teamList)):
+            team = teamList[i]
+            jira_analytics(username, password, team)
+            data = []
+            with open('TeamSPBackend/api/views/jira/cfd_modified.csv', newline='') as csv_file:
+                reader = csv.DictReader(csv_file)
+                for row in reader:
+                    data.append({
+                        'time': datetime_truncate(parser.parse(row['Time'])),
+                        'to_do': int(float(row['To Do'])),
+                        'in_progress': int(float(row['In Progress'])),
+                        'done': int(float(row['Done']))
+                    })
+                    if not JiraCountByTime.objects.filter(space_key=team, count_time=datetime_truncate(
+                            parser.parse(row['Time']))).exists():
+                        jira_obj = JiraCountByTime(space_key=team,
+                                                   count_time=datetime_truncate(parser.parse(row['Time'])),
+                                                   todo=int(float(row['To Do'])),
+                                                   in_progress=int(float(row['In Progress'])),
+                                                   done=int(float(row['Done'])))
+                        jira_obj.save()
 
-        jquery = jira.jql('project = "' + team + '" ORDER BY created ASC')['issues'][0]['fields']['created']
-
-        # parses to datetime object
-        jquery = parser.parse(jquery)
-
-        d0 = datetime_truncate(jquery)
-        today = datetime.date.today()
-        yesterday = datetime.date.today() -datetime.timedelta(1)
-
-        lastMonth = today - datetime.timedelta(30)
-
-        if lastMonth<d0:
-            delta = yesterday - d0
-        else:
-            delta = yesterday -lastMonth
-
-        date_list = [yesterday - datetime.timedelta(days=x) for x in range(delta.days)]
-        data = []
-        for day in reversed(date_list):
-            todo = jira.jql('project = "' + team + '" AND status WAS "To Do" ON ' + str(day), limit=0)['total']
-            in_progress = jira.jql('project = "' + team + '" AND status WAS "In Progress" ON ' + str(day), limit=0)['total']
-            done = jira.jql('project = "' + team + '" AND status WAS "Done" ON ' + str(day), limit=0)['total']
-            #print(day, todo, in_progress, done)
-            data.append({
-                'time': to_unix_time(day),
-                'to_do': todo,
-                'in_progress': in_progress,
-                'done': done
-            })
-
-            jira_obj = JiraCountByTime(space_key=team, count_time=time.strftime('%Y-%m-%d', time.localtime(int((to_unix_time(day))))), todo=todo,
-                                       in_progress=in_progress, done=done)
-            jira_obj.save()
-
-        resp = init_http_response(
-            RespCode.success.value.key, RespCode.success.value.msg)
-        resp['data'] = data
-        return HttpResponse(json.dumps(resp), content_type="application/json")
-     except:
+        return HttpResponse(data, content_type="application/json")
+    except Exception:
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
 
+
+def update_ticket_count_team_timestamped(team):
+    username = atl_username
+    password = atl_password
+    jira_analytics(username, password, team)
+    data = []
+    with open('TeamSPBackend/api/views/jira/cfd_modified.csv', newline='') as csv_file:
+        reader = csv.DictReader(csv_file)
+        for row in reader:
+            data.append({
+                'time': datetime_truncate(parser.parse(row['Time'])),
+                'to_do': int(float(row['To Do'])),
+                'in_progress': int(float(row['In Progress'])),
+                'done': int(float(row['Done']))
+            })
+            if not JiraCountByTime.objects.filter(space_key=team, count_time=datetime_truncate(
+                    parser.parse(row['Time']))).exists():
+                jira_obj = JiraCountByTime(space_key=team,
+                                           count_time=datetime_truncate(parser.parse(row['Time'])),
+                                           todo=int(float(row['To Do'])),
+                                           in_progress=int(float(row['In Progress'])),
+                                           done=int(float(row['Done'])))
+                jira_obj.save()
+
+        return data
+
+
 @require_http_methods(['GET'])
 def get_contributions(request, team):
-    """ Return a HttpResponse, data contains display names and Done Counts
-    NOTE:
-    jira.get_all_assignable_users_for_project returns assignable users
-    jql assignee returns issues assigned to users
-
-    assignable users may have zero records, let alone DONE
-    whilst assignees may have been deactivated, thus not gettable with jira methods
-    """
+    """ Return a HttpResponse, data contains display names and Done Counts"""
     try:
         jira = jira_login(request)
 
@@ -342,18 +367,19 @@ def get_contributions(request, team):
                 'done_count': count
             })
             if IndividualContributions.objects.filter(space_key=team, student=name).exists():
-                IndividualContributions.objects.filter(space_key=team, student=name).update(done_count = count)
+                IndividualContributions.objects.filter(space_key=team, student=name).update(done_count=count)
             else:
-                jira_obj = IndividualContributions(space_key=team,student=name, done_count=count)
+                jira_obj = IndividualContributions(space_key=team, student=name, done_count=count)
                 jira_obj.save()
 
         resp = init_http_response(
             RespCode.success.value.key, RespCode.success.value.msg)
         resp['data'] = data
         return HttpResponse(json.dumps(resp), content_type="application/json")
-    except:
+    except Exception:
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
+
 
 @require_http_methods(['GET'])
 def auto_get_contributions(request):
@@ -365,99 +391,28 @@ def auto_get_contributions(request):
         resp = init_http_response_withoutdata(
             RespCode.success.value.key, RespCode.success.value.msg)
         return HttpResponse(json.dumps(resp), content_type="application/json")
-    except:
+    except Exception:
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
 
 
 @require_http_methods(['GET'])
-def get_contributions_from_db(request,team):
+def get_contributions_from_db(request, team):
     try:
-
-        allExistRecord=list(IndividualContributions.objects.filter(space_key=team).values('student','done_count'))
+        allExistRecord = list(IndividualContributions.objects.filter(space_key=team).values('student', 'done_count'))
 
         resp = init_http_response(
             RespCode.success.value.key, RespCode.success.value.msg)
         resp['data'] = allExistRecord
         return HttpResponse(json.dumps(resp), content_type="application/json")
-    except:
+    except Exception:
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
-
-
-@require_http_methods(['GET'])
-def get_ticket_count_team_timestamped_afterthefirstrun(request, team):
-    """ Return a HttpResponse, data contains 3 kinds of issues timestamped with unix time"""
-    try:
-        jira = jira_login(request)
-
-        todo = jira.jql('project = "' + team + '" AND status = "To Do"', limit=0)['total']
-        in_progress = jira.jql('project = "' + team + '" AND status = "In Progress"', limit=0)['total']
-        done = jira.jql('project = "' + team + '" AND status = "Done"', limit=0)['total']
-        data = {
-            'time': time.strftime('%Y-%m-%d', time.localtime(to_unix_time(datetime.date.today()))),
-            'to_do': todo,
-            'in_progress': in_progress,
-            'done': done,
-        }
-
-        jira_obj = JiraCountByTime(space_key=team,count_time=data['time'], todo=data['to_do'], in_progress=data['in_progress'], done=data['done'])
-        jira_obj.save()
-
-        resp = init_http_response(
-            RespCode.success.value.key, RespCode.success.value.msg)
-        resp['data'] = data
-        return HttpResponse(json.dumps(resp), content_type="application/json")
-    except:
-        resp = {'code': -1, 'msg': 'error'}
-        return HttpResponse(json.dumps(resp), content_type="application/json")
-
-
-@require_http_methods(['GET'])
-def get_ticket_count_team_timestamped_from_db(request,team):
-    try:
-        allExistRecord=list(JiraCountByTime.objects.filter(space_key=team).values('count_time','todo','in_progress','done'))
-
-        resp = init_http_response(
-            RespCode.success.value.key, RespCode.success.value.msg)
-        resp['data'] = allExistRecord
-        return HttpResponse(json.dumps(resp), content_type="application/json")
-    except:
-        resp = {'code': -1, 'msg': 'error'}
-        return HttpResponse(json.dumps(resp), content_type="application/json")
-
-
-@require_http_methods(['GET'])
-def get_ticket_count_team_timestamped_history(request):
-    try:
-        jira = jira_login(request)
-        allProjects = jira.projects()
-        for p in allProjects:
-            get_ticket_count_team_timestamped(request, p['name'].lower())
-
-        resp = 'success!'
-        return HttpResponse(resp, content_type="application/json")
-    except:
-        resp = {'code': -1, 'msg': 'error'}
-        return HttpResponse(json.dumps(resp), content_type="application/json")
-
-@require_http_methods(['GET'])
-def auto_get_ticket_count_team_timestamped(request):
-     try:
-         jira = jira_login(request)
-         allProjects = jira.projects()
-         for p in allProjects:
-            get_ticket_count_team_timestamped_afterthefirstrun(request, p['name'].lower())
-         resp = 'success!'
-         return HttpResponse(resp, content_type="application/json")
-     except:
-         resp = {'code': -1, 'msg': 'error'}
-         return HttpResponse(json.dumps(resp), content_type="application/json")
 
 
 @require_http_methods(['POST'])
 def setGithubJiraUrl(request):
-     # try:
+    try:
         coordinator_id = request.session.get('coordinator_id')
         data = json.loads(request.body)
         space_key = data.get("space_key")
@@ -466,72 +421,90 @@ def setGithubJiraUrl(request):
         git_username = data.get("git_username")
         git_password = data.get("git_password")
 
-        existURLRecord = ProjectCoordinatorRelation.objects.get(coordinator_id=coordinator_id,space_key=space_key)
-        existURLRecord.git_url=git_url
-        existURLRecord.jira_project=jira_url
+        existURLRecord = ProjectCoordinatorRelation.objects.get(coordinator_id=coordinator_id, space_key=space_key)
+        existURLRecord.git_url = git_url
+        existURLRecord.jira_project = jira_url
         existURLRecord.git_username = git_username
         existURLRecord.git_password = git_password
         existURLRecord.save()
 
         # auto_update_commits(space_key)  # after setting git config, try to update git_commit table at once
+        update_ticket_count_team_timestamped(
+            space_key)  # after setting jira config, try to update jira_count_by_time table at once
 
         resp = init_http_response_withoutdata(
-             RespCode.success.value.key, RespCode.success.value.msg)
-        return HttpResponse(json.dumps(resp), content_type="application/json")
-     # except:
-     #    resp = {'code': -1, 'msg': 'error'}
-     #    return HttpResponse(json.dumps(resp), content_type="application/json")
-
-@require_http_methods(['POST'])
-def get_url_from_db(request):
-    try:
-        data = json.loads(request.body)
-        coordinator_id = data.get('coordinator_id')
-        space_key = data.get('space_key')
-        allExistRecord=list(ProjectCoordinatorRelation.objects.filter(coordinator_id=coordinator_id,space_key=space_key).values('git_url','jira_project'))
-
-        resp = init_http_response(
             RespCode.success.value.key, RespCode.success.value.msg)
-        resp['data'] = allExistRecord
         return HttpResponse(json.dumps(resp), content_type="application/json")
-    except:
+    except Exception:
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
 
-# Legacy APIs, not working
 
-def jira_analytics(request, team):
-    """ Configures config.yml and executes it with jira-agile-metrics"""
-    username, password = session_interpreter(request)
-    with open('config.yaml', 'r') as file:
+@require_http_methods(['GET'])
+def get_ticket_count_from_db(request, team):
+    try:
+        coordinator_id = request.session.get('coordinator_id')
+        existRecord = list(
+            ProjectCoordinatorRelation.objects.filter(coordinator_id=coordinator_id, space_key=team).values(
+                'jira_project'))
+        url = key_extracter(existRecord[0])
+        jira_url = url.get('jira_project')
+
+        ticketCountRecord = list(
+            JiraCountByTime.objects.filter(space_key=jira_url).values('count_time', 'todo', 'in_progress', 'done'))
+        resp = init_http_response(
+            RespCode.success.value.key, RespCode.success.value.msg)
+        resp['data'] = ticketCountRecord
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+    except Exception:
+        resp = {'code': -1, 'msg': 'error'}
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+
+
+def get_all_url_from_db():
+    allURL = []
+    allExistRecord = list(ProjectCoordinatorRelation.objects.values('jira_project').distinct())
+    for record in allExistRecord:
+        url = key_extracter(record)
+        jira_url = url.get('jira_project')
+        allURL.append(jira_url)
+    return allURL
+
+
+def jira_analytics(username, password, team):
+    """Only queries cfd with jira-agile-metrics"""
+    copyfile('TeamSPBackend/api/views/jira/cfd-template.yaml', 'TeamSPBackend/api/views/jira/cfd.yaml')
+    with open('TeamSPBackend/api/views/jira/cfd.yaml', 'r') as file:
         data = file.read()
+        data = data.replace('jirainstance', 'https://jira.cis.unimelb.edu.au:8444')
         data = data.replace('usernameplace', username)
         data = data.replace('passwordplace', password)
         data = data.replace('projectplace', team)
-    with open('config.yaml', 'w') as file:
+    with open('TeamSPBackend/api/views/jira/cfd.yaml', 'w') as file:
         file.write(data)
-    os.popen("jira-agile-metrics config.yaml --output-directory TeamSPBackend/api/views/jira")
-
-
-@require_http_methods(['GET'])
-def get_jira_cfd(request, team):
-    """ Return a HttpResponse, data contains a a png of Cumulative Flow Diagram"""
-    jira_analytics(request, team)
-    while not os.path.exists('TeamSPBackend/api/views/jira/cfd.png'):
-        time.sleep(1)
-
-    if os.path.isfile('TeamSPBackend/api/views/jira/cfd.png'):
-        time.sleep(1)
-        data = open('TeamSPBackend/api/views/jira/cfd.png', 'rb').read()
-        return HttpResponse(data, content_type="image/png")
+    os.system(
+        "jira-agile-metrics TeamSPBackend/api/views/jira/cfd.yaml --output-directory TeamSPBackend/api/views/jira")
+    copyfile('TeamSPBackend/api/views/jira/cfd-template.yaml',
+             'TeamSPBackend/api/views/jira/cfd.yaml')  # overwrites sensitive info
+    # rename csv headers
+    inputFileName = 'TeamSPBackend/api/views/jira/cfd.csv'
+    outputFileName = os.path.splitext(inputFileName)[0] + "_modified.csv"
+    with open(outputFileName, "w") as outfile:
+        for line in fileinput.input(
+                ['TeamSPBackend/api/views/jira/cfd.csv'],
+                inplace=False):
+            if fileinput.isfirstline():
+                outfile.write('Time,To Do,In Progress,Done\n')
+            else:
+                outfile.write(line)
 
 
 if 'runserver' in sys.argv:
     from django.http import HttpRequest
+
     request = HttpRequest()
     request.method = 'GET'
     request.build_absolute_uri
     request.META['SERVER_NAME'] = request.build_absolute_uri
     utils.start_schedule(auto_get_contributions, 60 * 60 * 24, request)
-#     auto_get_ticket_count_team_timestamped_history(request)
-#     utils.start_schedule(auto_get_ticket_count_team_timestamped, 60*60*24, request)
+    utils.start_schedule(auto_get_ticket_count_team_timestamped, 60 * 60 * 24, request)
