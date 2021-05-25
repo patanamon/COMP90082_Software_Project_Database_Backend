@@ -57,8 +57,9 @@ def get_git_commits(request, space_key):
     else:
         # Case 2: if git_commit table doesn't contain while relation table contains,
         # get it from git web (the first crawler)
-        if ProjectCoordinatorRelation.objects.filter(space_key=space_key).exists():
-            relation_data = ProjectCoordinatorRelation.objects.filter(space_key=space_key)[0]
+        coordinator_id = request.session['coordinator_id']
+        if ProjectCoordinatorRelation.objects.filter(space_key=space_key, coordinator_id=coordinator_id).exists():
+            relation_data = ProjectCoordinatorRelation.objects.filter(space_key=space_key, coordinator_id=coordinator_id)[0]
             git_dto = construct_url(relation_data)
             if not git_dto.valid_url:
                 resp = init_http_response_my_enum(RespCode.no_repository)
@@ -175,22 +176,23 @@ def get_git_pr(request, body, *args, **kwargs):
 
 @require_http_methods(['GET'])
 def get_git_metrics(request, space_key):
-
     # Case 1: if git_metrics table contains this space_key, get it directly from db
     if GitMetrics.objects.filter(space_key=space_key).exists():
         metrics_data = GitMetrics.objects.filter(space_key=space_key)[0]
     # Case 2: if git_metrics table does not contain this space_key, get it using get_metrics()
     else:
-        if ProjectCoordinatorRelation.objects.filter(space_key=space_key).exists():
-            relation_data = ProjectCoordinatorRelation.objects.filter(space_key=space_key)
+        coordinator_id = request.session['coordinator_id']
+        if ProjectCoordinatorRelation.objects.filter(space_key=space_key, coordinator_id=coordinator_id).exists():
+            relation_data = ProjectCoordinatorRelation.objects.filter(space_key=space_key, coordinator_id=coordinator_id)[0]
             get_metrics(relation_data)
             metrics_data = GitMetrics.objects.filter(space_key=space_key)
         # Case 3: if space_key is invalid, return None
         else:
             resp = init_http_response_my_enum(RespCode.invalid_parameter)
             return make_json_response(resp=resp)
+    data = []
 
-    data = {
+    tmp = {
         "file_count": int(metrics_data.file_count),
         "class_count": int(metrics_data.class_count),
         "function_count": int(metrics_data.function_count),
@@ -200,6 +202,8 @@ def get_git_metrics(request, space_key):
         "comment_lines_count": int(metrics_data.comment_lines_count),
         "comment_to_code_ratio": float(metrics_data.comment_to_code_ratio),
     }
+
+    data.append(tmp)
 
     resp = init_http_response_my_enum(RespCode.success, data)
     return make_json_response(resp=resp)
