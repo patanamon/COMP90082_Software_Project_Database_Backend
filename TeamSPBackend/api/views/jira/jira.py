@@ -326,7 +326,12 @@ def auto_get_ticket_count_team_timestamped(request):
                                                    in_progress=int(float(row['In Progress'])),
                                                    done=int(float(row['Done'])))
                         jira_obj.save()
-
+            os.remove('TeamSPBackend/api/views/jira/cfd_modified.csv')
+            os.remove('TeamSPBackend/api/views/jira/cfd.yaml')
+            copyfile('TeamSPBackend/api/views/jira/cfd-template.csv',
+                     'TeamSPBackend/api/views/jira/cfd.csv')
+            copyfile('TeamSPBackend/api/views/jira/cfd-template.png',
+                     'TeamSPBackend/api/views/jira/cfd.png')
         return HttpResponse(data, content_type="application/json")
     except Exception:
         resp = {'code': -1, 'msg': 'error'}
@@ -358,8 +363,14 @@ def update_ticket_count_team_timestamped(jira_url):
                                            in_progress=int(float(row['In Progress'])),
                                            done=int(float(row['Done'])))
                 jira_obj.save()
+    os.remove('TeamSPBackend/api/views/jira/cfd_modified.csv')
+    os.remove('TeamSPBackend/api/views/jira/cfd.yaml')
+    copyfile('TeamSPBackend/api/views/jira/cfd-template.csv',
+             'TeamSPBackend/api/views/jira/cfd.csv')
+    copyfile('TeamSPBackend/api/views/jira/cfd-template.png',
+             'TeamSPBackend/api/views/jira/cfd.png')
 
-        return team
+    return team
 
 
 @require_http_methods(['GET'])
@@ -428,8 +439,7 @@ def get_contributions_from_db(request, team):
 @require_http_methods(['POST'])
 def setGithubJiraUrl(request):
     # try:
-        # coordinator_id = request.session.get('coordinator_id')
-        coordinator_id = '1'
+        coordinator_id = request.session.get('coordinator_id')
         data = json.loads(request.body)
         space_key = data.get("space_key")
         git_url = data.get("git_url")
@@ -527,5 +537,5 @@ if 'runserver' in sys.argv:
     request.method = 'GET'
     request.build_absolute_uri
     request.META['SERVER_NAME'] = request.build_absolute_uri
-    # utils.start_schedule(auto_get_contributions, 60 * 60 * 24, request)
-    # utils.start_schedule(auto_get_ticket_count_team_timestamped, 60 * 60 * 24, request)
+    utils.start_schedule(auto_get_contributions, 60 * 60 * 24, request)
+    utils.start_schedule(auto_get_ticket_count_team_timestamped, 60 * 60 * 24, request)
