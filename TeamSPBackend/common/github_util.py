@@ -42,6 +42,7 @@ os.system(UND_LICENSE)
 UND_METRICS = UND_PATH + 'und create -db {} -languages python C++ Java add {} {} analyze'
 
 def construct_certification(repo, space_key):
+    # filter null username and password
     user_info = ProjectCoordinatorRelation.objects.filter(space_key=space_key).exclude(
         git_username__isnull=True, git_password__isnull=True)
     if len(user_info) == 0:
