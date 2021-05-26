@@ -185,8 +185,12 @@ def get_git_metrics(request, space_key):
         if ProjectCoordinatorRelation.objects.filter(space_key=space_key, coordinator_id=coordinator_id).exists():
             relation_data = ProjectCoordinatorRelation.objects.filter(space_key=space_key, coordinator_id=coordinator_id)[0]
             get_metrics(relation_data)
-            metrics_data = GitMetrics.objects.filter(space_key=space_key)
-        # Case 3: if space_key is invalid, return None
+            if GitMetrics.objects.filter(space_key=space_key).exists():
+                metrics_data = GitMetrics.objects.filter(space_key=space_key)[0]
+            else:
+                resp = init_http_response_my_enum(RespCode.invalid_parameter)
+                return make_json_response(resp=resp)
+            # Case 3: if space_key is invalid, return None
         else:
             resp = init_http_response_my_enum(RespCode.invalid_parameter)
             return make_json_response(resp=resp)

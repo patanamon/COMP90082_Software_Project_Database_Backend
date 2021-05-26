@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import json
 import os
 import logging
 import re
@@ -30,9 +30,6 @@ GIT_LOG_PATH = ' --> {}'
 # UND_PATH = '/Applications/Understand.app/Contents/MacOS/'
 # For Linux Server
 UND_PATH = '~/comp90082sp/understand/scitools/bin/linux64/'
-sys.path.append(UND_PATH)
-sys.path.append(UND_PATH+'Python')
-import understand
 
 # set Understand License
 UND_LICENSE = 'und -setlicensecode XfA7YbMwUZ9OCYJd'
@@ -40,6 +37,13 @@ os.system(UND_LICENSE)
 
 # understand und command line for loading a git repo and generate metrics
 UND_METRICS = UND_PATH + 'und create -db {} -languages python C++ Java add {} {} analyze'
+
+# Using Python API for get metrics
+GET_METRICS_PY_PATH = os.path.dirname(os.path.abspath(__file__)) + '/get_und_metrics.py'
+GET_METRICS_PY = 'python3 ' + GET_METRICS_PY_PATH + ' {} {}'
+# storage metrics.json
+METRICS_FILE_PATH = BASE_DIR + '/resource/understand/'
+
 
 def construct_certification(repo, space_key):
     # filter null username and password
@@ -196,22 +200,28 @@ def get_und_metrics(repo, space_key):
     if state == -1 or state == -2:
         return state
     und_file = convert(repo) + '.und'
+    metrics_file = convert(repo) + '.json'
     # bug-fixed: keep the same with  pull_repo()
     repo = construct_certification(repo, space_key)
     path = REPO_PATH + convert(repo)
+    st_time = time.time()
+    # Get .und , add files and analyze them
     und_metrics = UND_METRICS.format(und_file, path, und_file)
     logger.info('[Understand] File {} Executing: {}'.format(und_file, und_metrics))
-    st_time = time.time()
     os.system(und_metrics)
 
-    # open a project und
-    udb = understand.open(und_file)
-    # get all project metrics
-    metrics = udb.metric(udb.metrics())
+    # Get metrics.json by using another .py script
+    get_metrics_by_py = GET_METRICS_PY.format(und_file, metrics_file)
+    logger.info('[Understand Python API Get Metrics] get_metrics_by_py: {} '.format(get_metrics_by_py))
+    os.system(get_metrics_by_py)
 
+    metrics_file = METRICS_FILE_PATH + metrics_file
+    with open(metrics_file, 'r') as fp:
+        tmp_dict = json.load(fp)
+    metrics = tmp_dict
     end_time = time.time()
     cost_time = round(end_time - st_time, 2)
-    logger.info('[Understand] File {} Get Metrics: {} , cost : {} seconds'.format(und_file, metrics,cost_time))
+    logger.info('[Understand] File {} Get Metrics: {} , cost : {} seconds'.format(und_file, metrics, cost_time))
     return metrics
 
 # if __name__ == '__main__':
