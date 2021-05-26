@@ -6,6 +6,7 @@ import datetime
 import sys
 import re
 import csv
+import logging
 
 from math import ceil
 from django.views.decorators.http import require_http_methods
@@ -440,18 +441,19 @@ def get_contributions_from_db(request, team):
 def setGithubJiraUrl(request):
     try:
         coordinator_id = request.session.get('coordinator_id')
-        print(coordinator_id)
+        logger = logging.getLogger('django')
+        logger.info(coordinator_id)
         data = json.loads(request.body)
         space_key = data.get("space_key")
-        print(space_key)
+        logger.info(space_key)
         git_url = data.get("git_url")
-        print(git_url)
+        logger.info(git_url)
         jira_url = data.get("jira_url")
-        print(jira_url)
+        logger.info(jira_url)
         git_username = data.get("git_username")
-        print(git_username)
+        logger.info(git_username)
         git_password = data.get("git_password")
-        print(git_password)
+        logger.info(git_password)
 
         existURLRecord = ProjectCoordinatorRelation.objects.get(coordinator_id=coordinator_id, space_key=space_key)
         existURLRecord.git_url = git_url
