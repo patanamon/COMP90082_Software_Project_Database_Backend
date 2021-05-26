@@ -457,7 +457,14 @@ def auto_get_contributions(request):
 @require_http_methods(['GET'])
 def get_contributions_from_db(request, team):
     try:
-        allExistRecord = list(IndividualContributions.objects.filter(space_key=team).values('student', 'done_count'))
+        coordinator_id = request.session.get('coordinator_id')
+        existRecord = list(
+            ProjectCoordinatorRelation.objects.filter(coordinator_id=coordinator_id, space_key=team).values(
+                'jira_project'))
+        url = key_extracter(existRecord[0])
+        jira_url = url.get('jira_project')
+
+        allExistRecord = list(IndividualContributions.objects.filter(space_key=jira_url).values('student', 'done_count'))
 
         resp = init_http_response(
             RespCode.success.value.key, RespCode.success.value.msg)
