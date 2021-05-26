@@ -13,5 +13,3 @@ Workflow:
 Output:
 
     CFD data: cfd.csv
-    CFD chart: cfd.png
-    CFD chart title: Cumulative Flow Diagram
