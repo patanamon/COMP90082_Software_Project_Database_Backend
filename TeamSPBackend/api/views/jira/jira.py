@@ -319,11 +319,11 @@ def auto_get_ticket_count_team_timestamped(request):
                         'in_progress': int(float(row['In Progress'])),
                         'done': int(float(row['Done']))
                     })
-                    if not JiraCountByTime.objects.filter(space_key=team, count_time=round(to_unix_time(datetime_truncate(
+                    if not JiraCountByTime.objects.filter(space_key=team, time=round(to_unix_time(datetime_truncate(
                             parser.parse(row['Time']))))).exists():
                         jira_obj = JiraCountByTime(space_key=team,
-                                                   count_time=round(to_unix_time(datetime_truncate(parser.parse(row['Time'])))),
-                                                   todo=int(float(row['To Do'])),
+                                                   time=round(to_unix_time(datetime_truncate(parser.parse(row['Time'])))),
+                                                   to_do=int(float(row['To Do'])),
                                                    in_progress=int(float(row['In Progress'])),
                                                    done=int(float(row['Done'])))
                         jira_obj.save()
@@ -356,11 +356,11 @@ def update_ticket_count_team_timestamped(jira_url):
                 'in_progress': int(float(row['In Progress'])),
                 'done': int(float(row['Done']))
             })
-            if not JiraCountByTime.objects.filter(space_key=team, count_time=round(to_unix_time(atetime_truncate(
+            if not JiraCountByTime.objects.filter(space_key=team, time=round(to_unix_time(datetime_truncate(
                     parser.parse(row['Time']))))).exists():
                 jira_obj = JiraCountByTime(space_key=team,
-                                           count_time=round(to_unix_time(datetime_truncate(parser.parse(row['Time'])))),
-                                           todo=int(float(row['To Do'])),
+                                           time=round(to_unix_time(datetime_truncate(parser.parse(row['Time'])))),
+                                           to_do=int(float(row['To Do'])),
                                            in_progress=int(float(row['In Progress'])),
                                            done=int(float(row['Done'])))
                 jira_obj.save()
@@ -381,6 +381,7 @@ def get_contributions(request, team):
         jira = jira_login(request)
 
         students, names = get_done_contributor_names(get_project_key(team, jira), jira)
+        team = get_project_key(team, jira)
         count = []
         for student in students:
             count.append(jira.jql('assignee = ' + student + ' AND project = "'
@@ -406,6 +407,36 @@ def get_contributions(request, team):
     except Exception:
         resp = {'code': -1, 'msg': 'error'}
         return HttpResponse(json.dumps(resp), content_type="application/json")
+
+
+def update_contributions(jira_url):
+    """Immediately updates jira contribution"""
+    jira = jira_login(request)
+    team = get_url_from_db(jira_url)
+
+    students, names = get_done_contributor_names(team, jira)
+    count = []
+    for student in students:
+        count.append(jira.jql('assignee = ' + student + ' AND project = "'
+                              + team + '" AND status = "Done"')['total'])
+    result = dict(zip(names, count))
+
+    data = []
+    for name, count in result.items():
+        data.append({
+            'student': name,
+            'done_count': count
+        })
+        if IndividualContributions.objects.filter(space_key=team, student=name).exists():
+            IndividualContributions.objects.filter(space_key=team, student=name).update(done_count=count)
+        else:
+            jira_obj = IndividualContributions(space_key=team, student=name, done_count=count)
+            jira_obj.save()
+
+    resp = init_http_response(
+        RespCode.success.value.key, RespCode.success.value.msg)
+    resp['data'] = data
+    return HttpResponse(json.dumps(resp), content_type="application/json")
 
 
 @require_http_methods(['GET'])
@@ -463,8 +494,9 @@ def setGithubJiraUrl(request):
         existURLRecord.save()
 
         # auto_update_commits(space_key)  # after setting git config, try to update git_commit table at once
-        # update_ticket_count_team_timestamped(
-        #     jira_url)  # after setting jira config, try to update jira_count_by_time table at once
+        update_ticket_count_team_timestamped(
+            jira_url)  # after setting jira config, try to update jira_count_by_time table at once
+        update_contributions(jira_url)
 
         resp = init_http_response_withoutdata(
             RespCode.success.value.key, RespCode.success.value.msg)
@@ -486,7 +518,7 @@ def get_ticket_count_from_db(request, team):
         jira_url = url.get('jira_project')
 
         ticketCountRecord = list(
-            JiraCountByTime.objects.filter(space_key=jira_url).values('count_time', 'todo', 'in_progress', 'done'))
+            JiraCountByTime.objects.filter(space_key=jira_url).values('time', 'to_do', 'in_progress', 'done'))
         resp = init_http_response(
             RespCode.success.value.key, RespCode.success.value.msg)
         resp['data'] = ticketCountRecord
