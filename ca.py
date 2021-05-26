@@ -31,6 +31,7 @@ if __name__ == '__main__':
             customca = infile.read()     
         with open(cafile, 'ab') as outfile:
             outfile.write(customca)
+        check_cert('chain.pem')
             
     def is_admin():
         """Check admin in windows"""
@@ -39,23 +40,18 @@ if __name__ == '__main__':
         except:
             return False        
             
-    try:
-        requests.get('https://jira.cis.unimelb.edu.au:8444/')
-        print('Using local cert chain')
-        check_cert('chain.pem')
-        print('Connection to Jira OK.') 
-    except requests.exceptions.SSLError as e:
-        print('Adding local cert chain to Certifi store...')
-        if os.name == 'nt':  # for win
-            if is_admin():
-                update_ca()
-            else:
-                print("Please run this script with Administrator")
-        else:  # for unix
-            if os.geteuid() == 0:
-                update_ca()
-            else:
-                print("Please run this script with sudo")
-                subprocess.call(['sudo', 'python', *sys.argv])
-                sys.exit()
+
+    print('Adding local cert chain to Certifi store...')
+    if os.name == 'nt':  # for win
+        if is_admin():
+            update_ca()
+        else:
+            print("Please run this script with Administrator")
+    else:  # for unix
+        if os.geteuid() == 0:
+            update_ca()
+        else:
+            print("Please run this script with sudo")
+            subprocess.call(['sudo', 'python', *sys.argv])
+            sys.exit()
 
