@@ -5,8 +5,8 @@ from django.db import models
 class JiraCountByTime(models.Model):
     id = models.AutoField(primary_key=True)
     space_key = models.CharField(max_length=256, null=False)
-    count_time = models.CharField(max_length=256,null=False)
-    todo = models.IntegerField( null=False)
+    time = models.CharField(max_length=256,null=False)
+    to_do = models.IntegerField( null=False)
     in_progress = models.IntegerField( null=False)
     done = models.IntegerField(null=False)
 
