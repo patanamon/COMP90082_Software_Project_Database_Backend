@@ -463,8 +463,8 @@ def setGithubJiraUrl(request):
         existURLRecord.save()
 
         # auto_update_commits(space_key)  # after setting git config, try to update git_commit table at once
-        update_ticket_count_team_timestamped(
-            jira_url)  # after setting jira config, try to update jira_count_by_time table at once
+        # update_ticket_count_team_timestamped(
+        #     jira_url)  # after setting jira config, try to update jira_count_by_time table at once
 
         resp = init_http_response_withoutdata(
             RespCode.success.value.key, RespCode.success.value.msg)
