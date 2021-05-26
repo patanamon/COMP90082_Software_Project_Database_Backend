@@ -3,7 +3,6 @@ import os
 import sys
 import ctypes
 import subprocess
-import urllib3
 import requests
 import datetime
 import OpenSSL
