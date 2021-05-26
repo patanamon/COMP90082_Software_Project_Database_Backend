@@ -440,12 +440,18 @@ def get_contributions_from_db(request, team):
 def setGithubJiraUrl(request):
     try:
         coordinator_id = request.session.get('coordinator_id')
+        print(coordinator_id)
         data = json.loads(request.body)
         space_key = data.get("space_key")
+        print(space_key)
         git_url = data.get("git_url")
+        print(git_url)
         jira_url = data.get("jira_url")
+        print(jira_url)
         git_username = data.get("git_username")
+        print(git_username)
         git_password = data.get("git_password")
+        print(git_password)
 
         existURLRecord = ProjectCoordinatorRelation.objects.get(coordinator_id=coordinator_id, space_key=space_key)
         existURLRecord.git_url = git_url
@@ -454,7 +460,7 @@ def setGithubJiraUrl(request):
         existURLRecord.git_password = git_password
         existURLRecord.save()
 
-        auto_update_commits(space_key)  # after setting git config, try to update git_commit table at once
+        # auto_update_commits(space_key)  # after setting git config, try to update git_commit table at once
         update_ticket_count_team_timestamped(
             jira_url)  # after setting jira config, try to update jira_count_by_time table at once
 
