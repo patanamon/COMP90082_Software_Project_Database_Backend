@@ -313,15 +313,15 @@ def auto_get_ticket_count_team_timestamped(request):
                 reader = csv.DictReader(csv_file)
                 for row in reader:
                     data.append({
-                        'time': datetime_truncate(parser.parse(row['Time'])),
+                        'time': round(to_unix_time(datetime_truncate(parser.parse(row['Time'])))),
                         'to_do': int(float(row['To Do'])),
                         'in_progress': int(float(row['In Progress'])),
                         'done': int(float(row['Done']))
                     })
-                    if not JiraCountByTime.objects.filter(space_key=team, count_time=datetime_truncate(
-                            parser.parse(row['Time']))).exists():
+                    if not JiraCountByTime.objects.filter(space_key=team, count_time=round(to_unix_time(datetime_truncate(
+                            parser.parse(row['Time']))))).exists():
                         jira_obj = JiraCountByTime(space_key=team,
-                                                   count_time=datetime_truncate(parser.parse(row['Time'])),
+                                                   count_time=round(to_unix_time(datetime_truncate(parser.parse(row['Time'])))),
                                                    todo=int(float(row['To Do'])),
                                                    in_progress=int(float(row['In Progress'])),
                                                    done=int(float(row['Done'])))
@@ -350,15 +350,15 @@ def update_ticket_count_team_timestamped(jira_url):
         reader = csv.DictReader(csv_file)
         for row in reader:
             data.append({
-                'time': datetime_truncate(parser.parse(row['Time'])),
+                'time': round(to_unix_time(datetime_truncate(parser.parse(row['Time'])))),
                 'to_do': int(float(row['To Do'])),
                 'in_progress': int(float(row['In Progress'])),
                 'done': int(float(row['Done']))
             })
-            if not JiraCountByTime.objects.filter(space_key=team, count_time=datetime_truncate(
-                    parser.parse(row['Time']))).exists():
+            if not JiraCountByTime.objects.filter(space_key=team, count_time=round(to_unix_time(atetime_truncate(
+                    parser.parse(row['Time']))))).exists():
                 jira_obj = JiraCountByTime(space_key=team,
-                                           count_time=datetime_truncate(parser.parse(row['Time'])),
+                                           count_time=round(to_unix_time(datetime_truncate(parser.parse(row['Time'])))),
                                            todo=int(float(row['To Do'])),
                                            in_progress=int(float(row['In Progress'])),
                                            done=int(float(row['Done'])))
@@ -438,7 +438,7 @@ def get_contributions_from_db(request, team):
 
 @require_http_methods(['POST'])
 def setGithubJiraUrl(request):
-    # try:
+    try:
         coordinator_id = request.session.get('coordinator_id')
         data = json.loads(request.body)
         space_key = data.get("space_key")
@@ -454,16 +454,16 @@ def setGithubJiraUrl(request):
         existURLRecord.git_password = git_password
         existURLRecord.save()
 
-        # auto_update_commits(space_key)  # after setting git config, try to update git_commit table at once
+        auto_update_commits(space_key)  # after setting git config, try to update git_commit table at once
         update_ticket_count_team_timestamped(
             jira_url)  # after setting jira config, try to update jira_count_by_time table at once
 
         resp = init_http_response_withoutdata(
             RespCode.success.value.key, RespCode.success.value.msg)
         return HttpResponse(json.dumps(resp), content_type="application/json")
-    # except Exception:
-    #     resp = {'code': -1, 'msg': 'error'}
-    #     return HttpResponse(json.dumps(resp), content_type="application/json")
+    except Exception:
+        resp = {'code': -1, 'msg': 'error'}
+        return HttpResponse(json.dumps(resp), content_type="application/json")
 
 
 @require_http_methods(['GET'])
