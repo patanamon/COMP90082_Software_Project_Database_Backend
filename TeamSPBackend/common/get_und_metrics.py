@@ -10,7 +10,7 @@ sys.path.append(UND_PATH+'Python')
 import understand
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-UND_FILE_PATH= os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # '/home/ec2-user/comp90082sp/COMP90082_Software_Project_Database_Backend/'
+UND_FILE_PATH = os.path.dirname(BASE_DIR)  # '/home/ec2-user/comp90082sp/COMP90082_Software_Project_Database_Backend/'
 METRICS_FILE_PATH = BASE_DIR + '/resource/understand/'
 
 if __name__ == '__main__':

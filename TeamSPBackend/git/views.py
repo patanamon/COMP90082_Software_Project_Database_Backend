@@ -186,7 +186,7 @@ def get_metrics(relation):
         return make_json_response(resp=resp)
 
     if GitMetrics.objects.filter(space_key=relation.space_key).exists():
-        GitMetrics.objects.filter(student_name=relation.space_key).update(
+        GitMetrics.objects.filter(space_key=relation.space_key).update(
             file_count=metrics['CountDeclFile'],
             class_count=metrics['CountDeclClass'],
             function_count=metrics['CountDeclFunction'],
