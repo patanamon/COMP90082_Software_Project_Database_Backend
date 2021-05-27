@@ -89,7 +89,10 @@ def get_user(user, space_key):
     logger = logging.getLogger('django')
     logger.info('insert user ' + user['username'] + ' in the space ' + space_key)
     picture_path = "profile_picture/"
-    host = "http://18.167.74.23:18000"
+    import re
+    url = requests.get("http://txt.go.sohu.com/ip/soip")
+    ip = re.findall(r'\d+.\d+.\d+.\d+', url.text)
+    host = "http://" + ip[0] + ":18000"
     if user["profilePicture"]["path"].endswith("default.svg"):
         picture_path += "default.svg"
     else:
