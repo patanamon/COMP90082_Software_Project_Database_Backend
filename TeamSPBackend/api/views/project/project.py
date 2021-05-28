@@ -60,6 +60,8 @@ def login_sso(request, *args, **kwargs):
         url = 'https://sso.unimelb.edu.au/api/v1/authn'
         data = {"username": username, "password": password}
         res = requests.post(url=url, json=data)
+        logger = logging.getLogger("django")
+        logger.info(res.json())
         if operator.eq(res.json().get("status"),"SUCCESS"):
             resp = init_http_response(
                 RespCode.success.value.key, RespCode.success.value.msg)
