@@ -57,7 +57,7 @@ def login_sso(request, *args, **kwargs):
         json_body = json.loads(request.body)
         username = json_body.get("username")
         password = json_body.get("password")
-        if username == "admin" and password == "sp90082":
+        if username == "admin" and password == "123":
             store_coordinator(username)
             request.session['coordinator_id'] = Coordinator.objects.filter(coordinator_name=username)[0].id
             request.session['coordinator_name'] = username
