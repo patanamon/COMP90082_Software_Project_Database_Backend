@@ -59,6 +59,8 @@ def login_sso(request, *args, **kwargs):
         password = json_body.get("password")
         if username == "admin" and password == "sp90082":
             store_coordinator(username)
+            request.session['coordinator_id'] = Coordinator.objects.filter(coordinator_name=username)[0].id
+            request.session['coordinator_name'] = username
             resp = init_http_response(
                 RespCode.success.value.key, RespCode.success.value.msg)
             return HttpResponse(json.dumps(resp), content_type="application/json")
